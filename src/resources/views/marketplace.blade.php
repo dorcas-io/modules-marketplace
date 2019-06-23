@@ -91,7 +91,8 @@
 	                target = target.parentNode.hasAttribute('data-action') ? target.parentNode : target;
 	            }
 	            //console.log(target, target.getAttribute('data-action'));
-	            let action = target.getAttribute('data-action').toLowerCase();
+                //let action = target.getAttribute('data-action').toLowerCase();
+	            let action = target.getAttribute('data-action');
 	            let name = target.getAttribute('data-name');
 	            let id = target.getAttribute('data-id');
 	            let index = parseInt(target.getAttribute('data-index'), 10);

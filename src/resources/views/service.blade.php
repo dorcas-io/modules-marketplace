@@ -29,7 +29,7 @@
                         </div>
                     </div>
                 </p>
-                <a href="{{ route('marketplace-services', [$service->id]) . '?add_contact' }}"  class="btn btn-outline-primary btn-sm text-center {{ $is_contact ? 'disabled' : '' }}">
+                <a href="{{ url('/mmp/marketplace-services') . '/' . $service->id . '?add_contact' }}"  class="btn btn-outline-primary btn-sm text-center {{ $is_contact ? 'disabled' : '' }}">
                     <span class="fa fa-address-card"></span> Add to Contacts
                 </a>
             </div>
@@ -173,8 +173,18 @@
                     return moment(this.service.user.data.created_at).format('DD MMM, YYYY')
                 }
             },
+            methods: {
+                addedContactOnLoad() {
+                    //open Tab
+                    var url = document.location.toString();
+                    if (url.match('add_contact') && this.is_contact) {
+                        swal("Contact Added!", "The contact was successfully added to your contacts list", "success");
+                    }
+                }
+            },
             mounted: function () {
                 //console.log(this.service);
+                this.addedContactOnLoad();
             },
         });
 

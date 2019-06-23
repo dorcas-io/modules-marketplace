@@ -32,10 +32,10 @@
 	                        </div>
                         </div>
                         <div class="card-footer">
-                            <a class="btn btn-primary btn-sm" href="#" v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">Services</a>
-                            &nbsp;
-                            <a class="btn btn-success btn-sm" v-bind:href="'{{ route('directory.vendors') }}/' + contact.id">Send Payment</a>
-                            &nbsp;
+                            <!-- <a class="btn btn-primary btn-sm" href="#" v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">Services</a>
+                            &nbsp; -->
+                            <!-- <a class="btn btn-success btn-sm" v-bind:href="'{{ route('directory.vendors') }}/' + contact.id">Send Payment</a>
+                            &nbsp; -->
                             <a class="btn btn-danger btn-sm" href="#" v-on:click.prevent="deleteContact(index)">Remove</a>
                         </div>
 
@@ -114,7 +114,7 @@
 		                this.deleting = true;
                         return axios.delete("/mmp/marketplace-contacts/" + contact.id)
                             .then(function (response) {
-                                console.log(response);
+                               // console.log(response);
                                 context.contacts.splice(index, 1);
                                 return swal("Deleted!", "The contact was successfully removed.", "success");
                             })
