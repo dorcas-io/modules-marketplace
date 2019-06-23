@@ -13,48 +13,50 @@
     <div class="col-md-9 col-xl-9">
         <div class="row row-cards row-deck" id="marketplace-list">
 
-            <div id="marketplace-contacts" class="col-md-12">
-                <div class="col-md-6" v-for="(contact, index) in contacts" :key="contact.id">
-                    <div class="card">
-                    	<div class="card-status bg-blue"></div>
-                    	<div class="card-header">
-                    		<h3 class="card-title">@{{ typeof contact.contactable !== null ? contact.contactable.data.firstname + ' ' + contact.contactable.data.lastname : contact.firstname + ' ' + contact.lastname }}</h3>
-                    	</div>
-                        <div class="card-body">
-                            <h5>@{{ typeof contact.contactable !== null ? contact.contactable.data.email : contact.email }}</h5>
-                            <p>@{{ typeof contact.contactable !== null ? contact.contactable.data.phone : contact.phone }}</p>
-	                        <div v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">
-	                            <ul class="">
-	                                <li v-for="service in contact.contactable.data.professional_services.data" :key="service.id">
-	                                    @{{ service.title }} @ @{{ service.cost_currency + service.cost_amount.formatted + (service.cost_frequency === 'standard' ? '' : '/' + service.cost_frequency) }} &nbsp; <a v-bind:href="'/marketplace-services/' + service.id">View</a>
-	                                </li>
-	                            </ul>
-	                        </div>
-                        </div>
-                        <div class="card-footer">
-                            <!-- <a class="btn btn-primary btn-sm" href="#" v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">Services</a>
-                            &nbsp; -->
-                            <!-- <a class="btn btn-success btn-sm" v-bind:href="'{{ route('directory.vendors') }}/' + contact.id">Send Payment</a>
-                            &nbsp; -->
-                            <a class="btn btn-danger btn-sm" href="#" v-on:click.prevent="deleteContact(index)">Remove</a>
-                        </div>
+            <div id="marketplace-contacts">
+                <div class="row col-md-12" v-if="contacts.length > 0 && !is_fetching">
+                    <div class="col-md-6" v-for="(contact, index) in contacts" :key="contact.id">
+                        <div class="card">
+                        	<div class="card-status bg-blue"></div>
+                        	<div class="card-header">
+                        		<h3 class="card-title">@{{ typeof contact.contactable !== null ? contact.contactable.data.firstname + ' ' + contact.contactable.data.lastname : contact.firstname + ' ' + contact.lastname }}</h3>
+                        	</div>
+                            <div class="card-body">
+                                <h5>@{{ typeof contact.contactable !== null ? contact.contactable.data.email : contact.email }}</h5>
+                                <p>@{{ typeof contact.contactable !== null ? contact.contactable.data.phone : contact.phone }}</p>
+    	                        <div v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">
+    	                            <ul class="">
+    	                                <li v-for="service in contact.contactable.data.professional_services.data" :key="service.id">
+    	                                    @{{ service.title }} @ @{{ service.cost_currency + service.cost_amount.formatted + (service.cost_frequency === 'standard' ? '' : '/' + service.cost_frequency) }} &nbsp; <a v-bind:href="'/mmp/marketplace-services/' + service.id">View</a>
+    	                                </li>
+    	                            </ul>
+    	                        </div>
+                            </div>
+                            <div class="card-footer">
+                                <!-- <a class="btn btn-primary btn-sm" href="#" v-if="typeof contact.contactable !== 'undefined' && typeof contact.contactable.data.professional_services !== 'undefined' && contact.contactable.data.professional_services.data.length  > 0">Services</a>
+                                &nbsp; -->
+                                <!-- <a class="btn btn-success btn-sm" v-bind:href="'{{ route('directory.vendors') }}/' + contact.id">Send Payment</a>
+                                &nbsp; -->
+                                <a class="btn btn-danger btn-sm" href="#" v-on:click.prevent="deleteContact(index)">Remove</a>
+                            </div>
 
+                        </div>
+                    </div>
+                    <div class="col-md-12" v-if="typeof meta.pagination !== 'undefined' && meta.pagination.total_pages > 1">
+                        <!--TODO: Handle situations where the number of pages > 10; we need to limit the pages displayed in those cases -->
+                        <ul class="pagination justify-content-end">
+    						<!--TODO: Handle situations where the number of pages > 10; we need to limit the pages displayed in those cases -->
+    						<li class="page-item"><a class="page-link" href="#!" v-on:click.prevent="changePage(1)">First</a></li>
+    						<li class="page-item" v-for="n in meta.pagination.total_pages" v-bind:class="{active: n === page_number}">
+    						    <a class="page-link" href="#" v-on:click.prevent="changePage(n)" v-if="n !== page_number">@{{ n }}</a>
+    						    <a class="page-link" href="#" v-else>@{{ n }}</a>
+    						</li>
+    						<li class="page-item"><a class="page-link" href="#!" v-on:click.prevent="changePage(meta.pagination.total_pages)">Last</a></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-12" v-if="typeof meta.pagination !== 'undefined' && meta.pagination.total_pages > 1">
-                    <!--TODO: Handle situations where the number of pages > 10; we need to limit the pages displayed in those cases -->
-                    <ul class="pagination justify-content-end">
-						<!--TODO: Handle situations where the number of pages > 10; we need to limit the pages displayed in those cases -->
-						<li class="page-item"><a class="page-link" href="#!" v-on:click.prevent="changePage(1)">First</a></li>
-						<li class="page-item" v-for="n in meta.pagination.total_pages" v-bind:class="{active: n === page_number}">
-						    <a class="page-link" href="#" v-on:click.prevent="changePage(n)" v-if="n !== page_number">@{{ n }}</a>
-						    <a class="page-link" href="#" v-else>@{{ n }}</a>
-						</li>
-						<li class="page-item"><a class="page-link" href="#!" v-on:click.prevent="changePage(meta.pagination.total_pages)">Last</a></li>
-                    </ul>
-                </div>
 
-                <div class="col-md-12" v-if="contacts.length === 0">
+                <div class="col-md-12" v-if="contacts.length === 0 && !is_fetching">
                 @component('layouts.blocks.tabler.empty-fullpage')
                     @slot('title')
                         No Contacts
@@ -67,6 +69,14 @@
                     @endslot
                 @endcomponent
                 </div>
+
+
+                <div class="col-md-12" v-if="is_fetching">
+                    <div class="loader"></div>
+                    <div>Loading Contacts</div>
+                </div>
+
+
             </div>
 
         </div>

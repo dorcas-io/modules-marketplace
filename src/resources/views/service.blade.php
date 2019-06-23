@@ -159,7 +159,7 @@
                 credentials: {!! json_encode(!empty($service->user['data']['professional_credentials']) ? $service->user['data']['professional_credentials']['data'] : [] ) !!},
                 experiences: {!! json_encode(!empty($service->user['data']['professional_experiences']) ? $service->user['data']['professional_experiences']['data'] : [] ) !!},
                 defaultPhoto: "{{ cdn('images/avatar/avatar-9.png') }}",
-                backgroundImage: "{{ cdn('images/gallery/14.png') }}",
+                backgroundImage: "{{ cdn('images/gallery/14.png') }}"
             },
             computed: {
                 photo: function () {
@@ -178,7 +178,7 @@
                     //open Tab
                     var url = document.location.toString();
                     if (url.match('add_contact') && this.is_contact) {
-                        swal("Contact Added!", "The contact was successfully added to your contacts list", "success");
+                        swal("Contact Added!", this.service.user.data.firstname + ' ' + this.service.user.data.lastname + " was successfully added to your contacts list", "success");
                     }
                 }
             },
