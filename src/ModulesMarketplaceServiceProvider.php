@@ -11,10 +11,10 @@ class ModulesMarketplaceServiceProvider extends ServiceProvider {
 		$this->loadViewsFrom(__DIR__.'/resources/views', 'modules-marketplace');
 		$this->publishes([
 			__DIR__.'/config/modules-marketplace.php' => config_path('modules-marketplace.php'),
-		], 'config');
+		], 'dorcas-modules');
 		/*$this->publishes([
 			__DIR__.'/assets' => public_path('vendor/modules-marketplace')
-		], 'public');*/
+		], 'dorcas-modules');*/
 	}
 
 	public function register()
