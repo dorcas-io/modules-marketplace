@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- <div class="col-md-4 col-xl-4">
+    <div class="col-md-4 col-xl-4">
         <div class="card">
             <div class="card-status bg-cyan"></div>
             <div class="card-header">
@@ -36,7 +36,7 @@
                 Products are <em>physical goods</em> offered by<strong>vendors</strong> which are SMEs with <em>Online Stores</em>. A wide variety of products are available in various categories.
             </div>
         </div>
-    </div> -->
+    </div>
 
 </div>
 

@@ -95,6 +95,7 @@ class ModulesMarketplaceController extends Controller {
                 # unset it, if it already exists
             }
         }
+        
         $viewTemplate = $viewTemplate ?: 'modules-marketplace::marketplace'; //'modules-marketplace::index'
         return view($viewTemplate, $this->data);
     }

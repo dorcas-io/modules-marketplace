@@ -5,11 +5,11 @@ return [
     	'route' => 'marketplace-services',
         'icon' => 'fe fe-check-square',
     ],
-    /*'marketplace-products' => [
+    'marketplace-products' => [
         'title' => 'Products',
         'route' => 'marketplace-products',
         'icon' => 'fe fe-shopping-bag',
-    ],*/
+    ],
     'marketplace-contacts-main' => [
         'title' => 'Contacts',
         'route' => 'marketplace-contacts-main',
