@@ -13,6 +13,20 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers', 'midd
 });
 
 
+Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'middleware' => ['web'],], function() {
+    Route::get('/', 'ModulesMarketplaceStore@storeIndex')->name('marketplace');
+    Route::get('add-to-cart/{product_id}', 'ModulesMarketplaceStore@addToCart')->name('add-to-cart');
+    Route::get('checkout', 'ModulesMarketplaceStore@checkout')->name('checkout');
+    Route::get('cart', 'ModulesMarketplaceStore@viewCart')->name('view-cart');
+    Route::get('checkout', 'ModulesMarketplaceStore@checkout')->name('checkout');
+    Route::get('get-address',  'ModulesMarketplaceStore@getAddress')->name('get-address');
+    Route::get('calculate-delivery',  'ModulesMarketplaceStore@getDelivery')->name('get-delivery');
+    Route::get('fetch-user-data',  'ModulesMarketplaceStore@fetchUserData')->name('fetch-user-data');
+    Route::post('calculate-delivery','ModulesMarketplaceStore@calculateDelivery')->name('calculate-delivery');
+
+
+});
+
 
 
 /*Route::group(['middleware' => ['auth'], 'namespace' => 'Directory', 'prefix' => 'directory'], function () {
