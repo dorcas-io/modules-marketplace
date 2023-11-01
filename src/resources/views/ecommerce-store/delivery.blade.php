@@ -34,7 +34,8 @@
         <div class="container">
             <div class="checkout-page">
                 <div class="checkout-form">
-                    <form>
+                    <form action="{{url('get-delivery-cost')}}" method="POST">
+                        @csrf
                         <div class="row">
                             <div class="col-lg-6 col-sm-12 col-xs-12">
                                 <div class="checkout-title">
@@ -129,7 +130,7 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                        <div class="text-end"><a href="#" class="btn-solid btn">Get Delivery Cost</a></div>
+                                        <div class="text-end"><button class="btn-solid btn">Get Delivery Cost</button></div>
                                     </div>
                                 </div>
                             </div>

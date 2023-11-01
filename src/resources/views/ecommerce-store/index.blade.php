@@ -56,13 +56,13 @@
             <div class="col-xl-3">
                 <div class="category-right">
                     <div class="cat-box">
-                        <img src="{{asset('assets/images/fashion/banner/1.jpg')}}" alt="" class="img-fluid">
+                        <img src="{{asset('assets/hero/side-img1.jpeg')}}" alt="" class="img-fluid">
                     </div>
                     <div class="cat-box">
-                        <img src="{{asset('assets/images/fashion/banner/2.jpg')}}" alt="" class="img-fluid">
+                        <img src="{{asset('assets/hero/side-img2.jpeg')}}" alt="" class="img-fluid">
                     </div>
                     <div class="cat-box">
-                        <img src="{{asset('assets/images/fashion/banner/3.jpg')}}" alt="" class="img-fluid">
+                        <img src="{{asset('assets/hero/side-img3.jpeg')}}" alt="" class="img-fluid">
                     </div>
                 </div>
             </div>
@@ -1756,7 +1756,7 @@
                 <div class="col-xl-6 offset-xl-1">
                     <div class="app-section">
                         <div class="img-block">
-                            <img src="../assets/images/app/3.jpg" class=" img-fluid" alt="">
+                            <img src="{{asset('assets/hero/mobile.jpeg')}}"class=" img-fluid" alt="">
                         </div>
                         <div class="app-content">
                             <div>

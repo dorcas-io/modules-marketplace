@@ -22,7 +22,12 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'midd
     Route::get('get-address',  'ModulesMarketplaceStore@getAddress')->name('get-address');
     Route::get('calculate-delivery',  'ModulesMarketplaceStore@getDelivery')->name('get-delivery');
     Route::get('fetch-user-data',  'ModulesMarketplaceStore@fetchUserData')->name('fetch-user-data');
-    Route::post('calculate-delivery','ModulesMarketplaceStore@calculateDelivery')->name('calculate-delivery');
+    Route::post('delivery-details','ModulesMarketplaceStore@calculateDelivery')->name('calculate-delivery');
+    Route::post('get-delivery-cost','ModulesMarketplaceStore@getDeliveryCost')->name('get-delivery-cost');
+
+    Route::get('/initialize-payment', 'ModulesMarketplaceStore@initialize')->name('initialize-pay');
+
+    Route::get('/payment-callback', 'ModulesMarketplaceStore@callback')->name('payment-callback');
 
 
 });

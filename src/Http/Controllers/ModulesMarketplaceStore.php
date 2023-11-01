@@ -8,8 +8,10 @@ use GoogleMapClass;
 use Illuminate\Http\Request;
 use Hostville\Dorcas\Sdk;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use KingFlamez\Rave\Facades\Rave as Flutterwave;
 
 
 class ModulesMarketplaceStore extends Controller {
@@ -198,10 +200,7 @@ class ModulesMarketplaceStore extends Controller {
                 $createUser->save();
             }
 
-            //TODO:: Route a user to a page to select the type of delivery system the wish to use
-            //TODO:: If Kwik is selected then calculate base on the provider selected
-            //TODO:: store buyer details in a session and send to the core as customer details during purchase
-            //TODO:: Get the Vendors delivery system either deliver by himself or using a provider
+
 
             $password = 'password';
 
@@ -239,6 +238,299 @@ class ModulesMarketplaceStore extends Controller {
         }
 
         return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+
+    }
+
+    public function getDeliveryCost(Request $request)
+    {
+
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.payment' :$this->data['view'] = 'ecommerce-store.unauthorized';
+
+        if($this->data['isAuthenticated']) {
+            //TODO:: Route a user to a page to select the type of delivery system the wish to use
+            //TODO:: If Kwik is selected then calculate base on the provider selected
+            //TODO:: store buyer details in a session and send to the core as customer details during purchase
+            //TODO:: Get the Vendors delivery system either deliver by himself or using a provider
+            $headers = [
+                'Accept' => 'application/json',
+                "Content-Type" => "application/json"
+            ];
+
+            $buyer_data = session()->get('buyer_data');
+            $address    = $buyer_data['address'];
+            $lat        = $buyer_data['latitude'];
+            $lng        = $buyer_data['longitude'];
+
+            $eachProviderFare = [];
+
+            $eachSmeFare = [];
+
+
+            if(!is_null($request->provider)){
+
+                $total = 0;
+                $extraData = [];
+
+                foreach(session('cart') as $id => $details){
+                    $total += $details['price'] * $details['quantity'];
+
+                    if(in_array($details['company_id'],$request->sme_ids)){
+                        $extraData[] = ['company_id' => $details['company_id'] , 'amount' => $details['price'] , 'product_id' => $details['product_id']];
+                    }
+                }
+
+
+                $data = [
+                    'first_name'      =>  $buyer_data['first_name'],
+                    'last_name'      =>  $buyer_data['last_name'],
+                    'email'          =>  $buyer_data['email'],
+                    'phone_number'   =>  $buyer_data['phone'],
+                    'number_of_task' =>  count($request->provider),
+                    'address'        => $address,
+                    'latitude'       => $lat,
+                    'longitude'      => $lng,
+                    'smeIds'         => $request->sme_ids,
+                    'parcel_amount'  =>  $total,
+                    'carted_items'   => $extraData,
+                ];
+
+
+                try {
+
+                    switch($request->logistics){
+                        case 'kwik':
+                            $response =  Http::withoutVerifying()->withHeaders($headers)
+                                ->post(env('HUB_URL').'msl/get-cost',$data);
+                            break;
+                        case 'gig':
+                            $response = null;
+                            break;
+                        default:
+                            $response = Http::withoutVerifying()->withHeaders($headers)
+                                                   ->post(env('HUB_URL').'msl/get-cost',$data);
+                    }
+                }catch (\Exception $exception){
+                    toastr()->error('Oops! '.$exception->getMessage());
+                    return back();
+                }
+
+
+                 if(is_null($response)){
+                     toastr()->error('Oops! GIG Logistics implementation out of service opt for other options for delivery!');
+                     return redirect('checkout');
+                 }
+
+
+                $routes = json_decode($response);
+
+
+                if(isset($routes->success) && $routes->success){
+
+                    $shippingPaymentEstimate = 0;
+
+                    foreach($routes->billBreakDown_estimatedPrice as $index => $billBreakdown){
+
+                        $shippingPaymentEstimate +=  $billBreakdown->billBreakdown->ACTUAL_ORDER_PAYABLE_AMOUNT;
+
+                        if(in_array($billBreakdown->company_id,$request->sme_ids)){
+
+                            $eachProviderFare[] = [ 'delivery_amount' => $billBreakdown->billBreakdown->ACTUAL_ORDER_PAYABLE_AMOUNT ,
+                                'company_uuid'    => $billBreakdown->company_id,
+                                'company_name'    => '',
+                                'delivery_type'   => 'provider',
+                                'product_id'      => $billBreakdown->product_id,
+                            ];
+                        }
+                    }
+                    $this->data['providerAmount'] = $shippingPaymentEstimate;// $routes->data->payload->data->ACTUAL_ORDER_PAYABLE_AMOUNT;
+
+
+                    session()->put('smeIds', $request->sme_ids);
+                    session()->put('billBreakDown_estimatedPrice',$routes->billBreakDown_estimatedPrice);
+                    session()->put('providerAmount', $this->data['providerAmount']);
+
+                }else{
+
+                    $this->data['providerAmount'] =  0;
+
+                    toastr()->error('Oops! something went wrong : ' . $routes->message);
+
+                    return redirect('checkout');
+                }
+
+            }else{
+
+                $this->data['providerAmount'] = 0;
+            }
+
+
+
+            if(!is_null($request->routes)){
+
+                try{
+                    $response =  Http::withoutVerifying()->withHeaders($headers)
+                        ->post(env('CORE_URL').'calculate-delivery',['product_ids' => $request->routes ] );
+                }catch (\Exception $e){
+                    toastr()->error('Oops!'.$e->getMessage());
+                    return back();
+                }
+
+                $routes = json_decode($response);
+
+                $routeTotal = [];
+
+                foreach($routes as $index => $route){
+
+                    foreach(session('cart') as $id => $details){
+
+                        if($details['company_id'] === $route->company->uuid){
+                            $eachSmeFare[] = [
+                                'delivery_amount' => $route->prices[0]->unit_price,
+                                'company_uuid'    => $route->company->uuid ,
+                                'company_name'    => $route->company->name ,
+                                'delivery_type'   => 'sme' ,
+                                'product_id'      => $details['product_id'],
+                            ];
+                            ;
+                        }
+                    }
+                    $routeTotal[] = $route->prices[0]->unit_price;
+                }
+
+
+                $this->data['sumEachDeliveryAmount'] = array_sum($routeTotal);
+
+                session()->put('deliveryTotal',$this->data['sumEachDeliveryAmount']);
+                session()->put('deliveryRouteIds', $request->routes);
+                session()->put('selectedSmeRoutesObject', $routes);
+
+            }else{
+                $this->data['sumEachDeliveryAmount'] = 0;
+            }
+
+            $eachFare  = null;
+            if(!empty($eachSmeFare) && !empty($eachProviderFare)){
+
+                $eachFare = array_merge($eachSmeFare,$eachProviderFare);
+
+            }elseif(!empty($eachSmeFare) && empty($eachProviderFare) ){
+
+                $eachFare = $eachSmeFare;
+
+            }elseif(empty($eachSmeFare) && !empty($eachProviderFare) ){
+
+                $eachFare = $eachProviderFare;
+            }
+
+
+            session()->put('eachSmeDeliveryFare', $eachFare);
+
+            $this->data['sumDeliveryAmount'] =  $this->data['sumEachDeliveryAmount'] + $this->data['providerAmount'];
+
+
+            $total = 0;
+
+            foreach(session('cart') as $id => $details){
+
+                $total += $details['price'] * $details['quantity'];
+
+            }
+
+            $this->data['calculate_vat'] = $total + $this->data['sumDeliveryAmount'];
+
+            if(config('vat.type') === 'percentage'){
+
+                $this->data['calculate_vat'] = $total * config('vat.value')/100;
+
+            }elseif(config('vat.type') === 'value'){
+
+                $this->data['calculate_vat'] = config('vat.value');
+
+            }
+
+            $this->data['vat_value'] = config('vat.value');
+
+            session()->put('deliveryTotal',$this->data['sumDeliveryAmount']+$this->data['calculate_vat']);
+
+        }
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+
+    }
+
+
+    public function initialize()
+    {
+        //This generates a payment reference
+        $reference = Flutterwave::generateReference();
+
+       $totalAmount =  session()->get('deliveryTotal');
+       $buyer_data = session()->get('buyer_data');
+        // Enter the details of the payment
+
+        $partnerAdmin = DB::connection('core_mysql')->table("companies")->where('id', 1)->first();
+        # get company data of admin
+        $company_data = (array) $partnerAdmin->extra_data;
+
+        //company payments_settings for invididual smes
+//        dd(  $company_data   );
+        $data = [
+            'payment_options' => 'card,banktransfer',
+            'amount' => $totalAmount,
+            'email' =>  $buyer_data['email'],
+            'tx_ref' => $reference,
+            'currency' => "NGN",
+            'redirect_url' => route('payment-callback'),
+            'customer' => [
+                'email' =>  $buyer_data['email'],
+                "phone_number" =>  $buyer_data['phone'],
+                "name" =>  $buyer_data['first_name'] . '' .  $buyer_data['last_name']
+            ],
+
+            "customizations" => [
+                "title" => 'Product purchase',
+                "description" => now()
+            ]
+        ];
+
+        $payment = Flutterwave::initializePayment($data);
+
+
+        if ($payment['status'] !== 'success') {
+            // notify something went wrong
+            return;
+        }
+
+        return redirect($payment['data']['link']);
+    }
+
+    public function callback()
+    {
+
+        $status = request()->status;
+
+        //if payment is successful
+        if ($status ==  'successful') {
+
+            $transactionID = Flutterwave::getTransactionIDFromCallback();
+            $data = Flutterwave::verifyTransaction($transactionID);
+
+            dd($data);
+        }
+        elseif ($status ==  'cancelled'){
+            //Put desired action/code after transaction has been cancelled here
+        }
+        else{
+            //Put desired action/code after transaction has failed here
+        }
+        // Get the transaction from your DB using the transaction reference (txref)
+        // Check if you have previously given value for the transaction. If you have, redirect to your successpage else, continue
+        // Confirm that the currency on your db transaction is equal to the returned currency
+        // Confirm that the db transaction amount is equal to the returned amount
+        // Update the db transaction record (including parameters that didn't exist before the transaction is completed. for audit purpose)
+        // Give value for the transaction
+        // Update the transaction to note that you have given value for the transaction
+        // You can also redirect to your success page from here
 
     }
 

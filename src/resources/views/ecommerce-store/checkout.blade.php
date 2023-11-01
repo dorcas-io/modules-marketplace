@@ -40,7 +40,7 @@
     <div class="container">
         <div class="checkout-page">
             <div class="checkout-form">
-                <form method="post" action="{{url('calculate-delivery')}}" id="calculateDelivery">
+                <form method="post" action="{{url('delivery-details')}}" id="calculateDelivery">
                     @csrf
                     <div class="row">
                         <div class="col-lg-6 col-sm-12 col-xs-12">
