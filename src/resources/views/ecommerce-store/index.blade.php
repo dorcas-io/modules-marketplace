@@ -109,10 +109,13 @@
                 <div class="col-xl-12 p-0 ratio_asos">
                     <div class="slider-6 no-arrow">
                         @foreach($flash_sales as $index => $product)
+
                             <div>
                                 <div class="product-box">
                                     <div class="img-block">
-                                        <a href="#"><img src="{{asset('assets/images/fashion/pro/1.jpg')}}"
+
+                                        <a href="{{url('/product/'.$product->id)}}">
+                                            <img src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}"
                                                          class=" img-fluid bg-img" alt=""></a>
                                         <div class="cart-info">
                                             <button tabindex="0" class="addcart-box" title="Quick shop"><i
@@ -122,35 +125,45 @@
                                             <a href="javascript:void(0)" data-bs-toggle="modal"
                                                data-bs-target="#quick-view" title="Quick View"><i class="ti-search"
                                                                                                   aria-hidden="true"></i></a>
-                                            <a href="compare.html" title="Compare"><i class="ti-reload"
+                                            <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
                                                                                       aria-hidden="true"></i></a>
                                         </div>
                                     </div>
                                     <div class="product-info product-content">
                                         <a href="#"><h6>{{$product->name}}</h6></a>
-                                        <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{$product->default_unit_price->formatted}}</h5>
+                                        <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
                                     </div>
                                     <div class="addtocart_box">
                                         <div class="addtocart_detail">
+
+
                                             <div>
                                                 <div class="color">
-                                                    <h5>color</h5>
+                                                    @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
+                                                        <h5>color</h5>
+                                                    @endif
                                                     <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
+                                                    @foreach($product->variants as $variant)
+                                                        @if(strtolower($variant->product_variant_type) === 'colour')
+                                                             <li class="{{$variant->product_variant}}"></li>
+                                                        @endif
+                                                    @endforeach
                                                     </ul>
                                                 </div>
+
                                                 <div class="size">
-                                                    <h5>size</h5>
+                                                    @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
+                                                        <h5>size</h5>
+                                                    @endif
                                                     <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
+                                                        @foreach($product->variants as $variant)
+                                                            @if(strtolower($variant->product_variant_type) === 'size')
+                                                                <li class="{{$variant->product_variant}}"></li>
+                                                            @endif
+                                                        @endforeach
                                                     </ul>
                                                 </div>
+
                                                 <div class="addtocart_btn">
                                                     {{--                                                class="add-to-cart-btn"--}}
                                                     {{--                                                <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
@@ -158,6 +171,7 @@
 
                                                 </div>
                                             </div>
+
                                         </div>
                                         <div class="close-cart">
                                             <i class="fa fa-times" aria-hidden="true"></i>
@@ -182,7 +196,7 @@
                     <a href="#">
                         <div class="collection-banner border-0 p-right text-start">
                             <div class="img-part">
-                                <img src="../assets/images/fashion/banner/banner1.jpg" class=" img-fluid  bg-img"
+                                <img src="{{asset('assets/hero/hero_footer_1.jpeg')}}" class=" img-fluid  bg-img"
                                      alt="">
                             </div>
                             <div class="contain-banner">
@@ -201,7 +215,7 @@
                     <a href="#">
                         <div class="collection-banner border-0 p-left text-start">
                             <div class="img-part">
-                                <img src="../assets/images/fashion/banner/banner2.jpg" class=" img-fluid bg-img" alt="">
+                                <img src="{{asset('assets/hero/hero_footer_2.jpeg')}}" class=" img-fluid bg-img" alt="">
                             </div>
                             <div class="contain-banner">
                                 <div>
@@ -1117,7 +1131,7 @@
                     </div>
                 </div>
                 <div class="col-xl-2 side-banner side-banner2 pe-0 d-none d-xl-block">
-                    <a href="#"><img src="../assets/images/vb-fashion.jpg" alt="" class=" img-fluid "></a>
+                    <a href="#"><img src="{{asset('assets/hero/hero_footer.jpeg')}}" alt="" class=" img-fluid "></a>
                 </div>
                 <div class="col-xl-6 ps-0 ratio_square media-product-section">
                     <div class="tab-head">
@@ -1616,83 +1630,83 @@
 
 
     <!-- blog section start -->
-    <section class=" p-t-0  blog-section">
-        <div class="container">
-            <h2 class="title pt-0">from the blog</h2>
-            <div class="slide-4">
-                <div>
-                    <a href="#" class="blog">
-                        <div class="blog-image">
-                            <img src="../assets/images/fashion/blog/1.jpg" class="img-fluid" alt="">
-                        </div>
-                        <div class="blog-info">
-                            <div>
-                                <h5>25 july 2018</h5>
-                                <p>Sometimes on purpose ected humour. dummy text.</p>
-                                <h6>by: admin, 0 comment</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="blog">
-                        <div class="blog-image">
-                            <img src="../assets/images/fashion/blog/2.jpg" class="img-fluid" alt="">
-                        </div>
-                        <div class="blog-info">
-                            <div>
-                                <h5>25 july 2018</h5>
-                                <p>Sometimes on purpose ected humour. dummy text.</p>
-                                <h6>by: admin, 0 comment</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="blog">
-                        <div class="blog-image">
-                            <img src="../assets/images/fashion/blog/5.jpg" class="img-fluid" alt="">
-                        </div>
-                        <div class="blog-info">
-                            <div>
-                                <h5>25 july 2018</h5>
-                                <p>Sometimes on purpose ected humour. dummy text.</p>
-                                <h6>by: admin, 0 comment</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="blog">
-                        <div class="blog-image">
-                            <img src="../assets/images/fashion/blog/4.jpg" class="img-fluid" alt="">
-                        </div>
-                        <div class="blog-info">
-                            <div>
-                                <h5>25 july 2018</h5>
-                                <p>Sometimes on purpose ected humour. dummy text.</p>
-                                <h6>by: admin, 0 comment</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div>
-                    <a href="#" class="blog">
-                        <div class="blog-image">
-                            <img src="../assets/images/fashion/blog/3.jpg" class="img-fluid" alt="">
-                        </div>
-                        <div class="blog-info">
-                            <div>
-                                <h5>25 july 2018</h5>
-                                <p>Sometimes on purpose ected humour. dummy text.</p>
-                                <h6>by: admin, 0 comment</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+{{--    <section class=" p-t-0  blog-section">--}}
+{{--        <div class="container">--}}
+{{--            <h2 class="title pt-0">from the blog</h2>--}}
+{{--            <div class="slide-4">--}}
+{{--                <div>--}}
+{{--                    <a href="#" class="blog">--}}
+{{--                        <div class="blog-image">--}}
+{{--                            <img src="../assets/images/fashion/blog/1.jpg" class="img-fluid" alt="">--}}
+{{--                        </div>--}}
+{{--                        <div class="blog-info">--}}
+{{--                            <div>--}}
+{{--                                <h5>25 july 2018</h5>--}}
+{{--                                <p>Sometimes on purpose ected humour. dummy text.</p>--}}
+{{--                                <h6>by: admin, 0 comment</h6>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
+{{--                <div>--}}
+{{--                    <a href="#" class="blog">--}}
+{{--                        <div class="blog-image">--}}
+{{--                            <img src="../assets/images/fashion/blog/2.jpg" class="img-fluid" alt="">--}}
+{{--                        </div>--}}
+{{--                        <div class="blog-info">--}}
+{{--                            <div>--}}
+{{--                                <h5>25 july 2018</h5>--}}
+{{--                                <p>Sometimes on purpose ected humour. dummy text.</p>--}}
+{{--                                <h6>by: admin, 0 comment</h6>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
+{{--                <div>--}}
+{{--                    <a href="#" class="blog">--}}
+{{--                        <div class="blog-image">--}}
+{{--                            <img src="../assets/images/fashion/blog/5.jpg" class="img-fluid" alt="">--}}
+{{--                        </div>--}}
+{{--                        <div class="blog-info">--}}
+{{--                            <div>--}}
+{{--                                <h5>25 july 2018</h5>--}}
+{{--                                <p>Sometimes on purpose ected humour. dummy text.</p>--}}
+{{--                                <h6>by: admin, 0 comment</h6>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
+{{--                <div>--}}
+{{--                    <a href="#" class="blog">--}}
+{{--                        <div class="blog-image">--}}
+{{--                            <img src="../assets/images/fashion/blog/4.jpg" class="img-fluid" alt="">--}}
+{{--                        </div>--}}
+{{--                        <div class="blog-info">--}}
+{{--                            <div>--}}
+{{--                                <h5>25 july 2018</h5>--}}
+{{--                                <p>Sometimes on purpose ected humour. dummy text.</p>--}}
+{{--                                <h6>by: admin, 0 comment</h6>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
+{{--                <div>--}}
+{{--                    <a href="#" class="blog">--}}
+{{--                        <div class="blog-image">--}}
+{{--                            <img src="../assets/images/fashion/blog/3.jpg" class="img-fluid" alt="">--}}
+{{--                        </div>--}}
+{{--                        <div class="blog-info">--}}
+{{--                            <div>--}}
+{{--                                <h5>25 july 2018</h5>--}}
+{{--                                <p>Sometimes on purpose ected humour. dummy text.</p>--}}
+{{--                                <h6>by: admin, 0 comment</h6>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                    </a>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    </section>--}}
     <!-- blog secion end -->
 
 

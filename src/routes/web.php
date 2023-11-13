@@ -24,11 +24,29 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'midd
     Route::get('fetch-user-data',  'ModulesMarketplaceStore@fetchUserData')->name('fetch-user-data');
     Route::post('delivery-details','ModulesMarketplaceStore@calculateDelivery')->name('calculate-delivery');
     Route::post('get-delivery-cost','ModulesMarketplaceStore@getDeliveryCost')->name('get-delivery-cost');
-
     Route::get('/initialize-payment', 'ModulesMarketplaceStore@initialize')->name('initialize-pay');
-
     Route::get('/payment-callback', 'ModulesMarketplaceStore@callback')->name('payment-callback');
+    Route::get('/payment-success', 'ModulesMarketplaceStore@paymentSuccess')->name('payment-success');
+    Route::get('/product/{product_id}', 'ModulesMarketplaceStore@singleProduct')->name('single-product');
+    Route::post('add-review/{product_id}', 'ModulesMarketplaceStore@addReview')->name('add-review');
+    Route::post('add-review/{product_id}', 'ModulesMarketplaceStore@addReview')->name('add-review');
+    Route::get('categories/{category}','ModulesMarketplaceStore@productCategories')->name('product-category');
+    Route::get('profile/{user_id}','ModulesMarketplaceStore@userProfile')->name('user-profile');
+    Route::post('update-profile/{user_id}','ModulesMarketplaceStore@updateUserProfile')->name('update-user-profile');
+    Route::get('orders/{user_id}','ModulesMarketplaceStore@myOrders')->name('user-orders');
 
+
+    Route::get('/share-product', function(){
+
+        $productName = request()->product;
+        $url = request()->url;
+        $shareText = urlencode("Check out this product: $productName \n");
+        $shareText .= urlencode($url);
+
+        $whatsappUrl = "https://api.whatsapp.com/send?text=$shareText";
+
+        return redirect()->to($whatsappUrl);
+    });
 
 });
 

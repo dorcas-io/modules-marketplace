@@ -4,6 +4,7 @@
 namespace Dorcas\ModulesMarketplace\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use GoogleMapClass;
 use Illuminate\Http\Request;
 use Hostville\Dorcas\Sdk;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use KingFlamez\Rave\Facades\Rave as Flutterwave;
 
 
@@ -84,12 +86,18 @@ class ModulesMarketplaceStore extends Controller {
 
             session()->put('cart', $cart);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Item added to cart.',
-                'cart' => $cart,
-                'cart_count' => config('app.cart_count')
-            ]);
+            if(request()->expectsJson()){
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Item added to cart.',
+                    'cart' => $cart,
+                    'cart_count' => config('app.cart_count')
+                ]);
+            }else{
+                toastr()->success('Added to cart successfully');
+                return back();
+            }
+
 
         }
 
@@ -324,6 +332,8 @@ class ModulesMarketplaceStore extends Controller {
                 $routes = json_decode($response);
 
 
+
+
                 if(isset($routes->success) && $routes->success){
 
                     $shippingPaymentEstimate = 0;
@@ -450,7 +460,8 @@ class ModulesMarketplaceStore extends Controller {
 
             $this->data['vat_value'] = config('vat.value');
 
-            session()->put('deliveryTotal',$this->data['sumDeliveryAmount']+$this->data['calculate_vat']);
+            session()->put('deliveryTotal',$this->data['sumDeliveryAmount']);
+//            +$this->data['calculate_vat']
 
         }
 
@@ -464,13 +475,48 @@ class ModulesMarketplaceStore extends Controller {
         //This generates a payment reference
         $reference = Flutterwave::generateReference();
 
-       $totalAmount =  session()->get('deliveryTotal');
        $buyer_data = session()->get('buyer_data');
+       $logistics_payment = session()->get('deliveryTotal');
+//       dd(session()->get('deliveryTotal') );
         // Enter the details of the payment
 
+
+        $total = 0;
+
+        foreach(session('cart') as $id => $details){
+            $total += $details['price'] * $details['quantity'];
+        }
+
+        $totalAmount = $total +  $logistics_payment;
+
         $partnerAdmin = DB::connection('core_mysql')->table("companies")->where('id', 1)->first();
-        # get company data of admin
+
         $company_data = (array) $partnerAdmin->extra_data;
+
+        $partnerData = json_decode($company_data[0]);
+
+        $dorcasPayment = [];
+        $partnerPayment = [];
+        $amount_sales_sme = 0;
+
+        if (isset($partnerData->global_partner_settings->ecommerce) && !empty($partnerData->global_partner_settings->ecommerce) ) {
+
+            $partnerECommerce = $partnerData->global_partner_settings->ecommerce;
+            $transactionFees =  $partnerECommerce->transaction_fees;
+
+            foreach(session('cart') as $id => $details){
+                $eachSmeTotal = $details['price'] * $details['quantity'];
+                $dorcasPayment[] =  $eachSmeTotal *  $transactionFees->dorcas/100;
+                $partnerPayment[] =  $eachSmeTotal *  $transactionFees->partner/100;
+//                $amount_sales_sme += $details['price'] * $details['quantity'];
+            }
+
+            $amount_total_partner = array_sum($partnerPayment);
+            $amount_total_dorcas = array_sum($dorcasPayment);
+            $amount_sales_sme = $totalAmount;
+        }
+
+
 
         //company payments_settings for invididual smes
 //        dd(  $company_data   );
@@ -488,8 +534,30 @@ class ModulesMarketplaceStore extends Controller {
             ],
 
             "customizations" => [
-                "title" => 'Product purchase',
+                "title" => 'Item purchase',
                 "description" => now()
+            ],
+             "subaccounts" => [
+                [
+                    "id" =>  $partnerECommerce->subaccounts->sales_sme,
+                    "transaction_charge_type" => "flat_subaccount",
+                    "transaction_charge" => $amount_sales_sme,
+                ],
+                [
+                    "id" =>  $partnerECommerce->subaccounts->logistics,
+                    "transaction_charge_type" => "flat_subaccount",
+                    "transaction_charge" =>  $logistics_payment,
+                ],
+                [
+                    "id" =>  $partnerECommerce->subaccounts->partner,
+                    "transaction_charge_type" => "flat_subaccount",
+                    "transaction_charge" => $amount_total_partner,
+                ],
+                [
+                    "id" =>  $partnerECommerce->subaccounts->dorcas,
+                    "transaction_charge_type" => "flat_subaccount",
+                    "transaction_charge" =>  $amount_total_dorcas,
+                ],
             ]
         ];
 
@@ -515,7 +583,83 @@ class ModulesMarketplaceStore extends Controller {
             $transactionID = Flutterwave::getTransactionIDFromCallback();
             $data = Flutterwave::verifyTransaction($transactionID);
 
-            dd($data);
+
+            $headersCore = [
+                'Accept' => 'application/json' ,
+                'Content-Type' => 'application/json'
+            ];
+
+            $buyer_data = session()->get('buyer_data');
+
+
+            $urlCore = env('CORE_URL').'manage-cart-transaction';
+
+            $paymentGroup = session()->get('payment_group');
+
+
+            try{
+
+                $cart = session()->get('cart');
+
+                $response = Http::withoutVerifying()->withHeaders($headersCore)->post($urlCore, [
+                    'email'            => $buyer_data['email'],
+                    'firstname'         => $buyer_data['first_name'],
+                    'lastname'         => $buyer_data['last_name'],
+                    'phone'            => $buyer_data['phone'],
+                    'customer_consent' => $buyer_data['consent'] ?? null,
+                    'carts'            => $cart,
+                ]);
+            }catch(\Exception $e){
+
+                toastr()->error($e->getMessage());
+                return back();
+
+            }
+
+            $checkResponse  = json_decode($response);
+
+
+            $kwikDeliveryData = session()->get('billBreakDown_estimatedPrice');
+
+
+            if(isset($checkResponse->success) && $checkResponse->success) {
+
+                foreach ($checkResponse->data as $i => $data) {
+
+                    if (isset($data->order->company->extra_data->logistics_settings)
+
+                        && $data->order->company->extra_data->logistics_settings->logistics_shipping === 'shipping_provider') {
+                        $paymentGroup = Str::orderedUuid();
+                        //rand(1,20);
+                        foreach ($kwikDeliveryData as $kwikData) {
+                            if ($kwikData->company_id === $data->order->company->uuid) {
+                                $recordOrder = new \App\Models\Order();
+                                $recordOrder->core_order_id = $data->order->uuid;
+                                $recordOrder->delivery_billBreakdown = json_encode($kwikData->billBreakdown);
+                                $recordOrder->delivery_estimatedPrice = json_encode($kwikData->estimatedPrice);
+                                $recordOrder->payment_group = $paymentGroup;
+                                $recordOrder->order = json_encode($data);
+                                $recordOrder->user_id = auth()->user() ? auth()->user()->id : null;
+                                $recordOrder->save();
+                            }
+                        }
+                    }
+                }
+            }
+
+            toastr()->success('Payment made successfully');
+
+            session()->forget('cart');
+            session()->forget('deliveryTotal');
+            session()->forget('deliveryRouteIds');
+            session()->forget('customerDetails');
+            session()->forget('selectedSmeRoutesObject');
+            session()->forget('smeIds');
+            session()->forget('billBreakDown_estimatedPrice');
+            session()->forget('payment_group');
+            session()->forget('eachSmeDeliveryFare');
+
+            return redirect('/payment-success');
         }
         elseif ($status ==  'cancelled'){
             //Put desired action/code after transaction has been cancelled here
@@ -532,6 +676,200 @@ class ModulesMarketplaceStore extends Controller {
         // Update the transaction to note that you have given value for the transaction
         // You can also redirect to your success page from here
 
+    }
+
+
+    public function singleProduct($product_id)
+    {
+
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.single-product':
+                                        $this->data['view'] = 'ecommerce-store.unauthorized';
+
+        $url =  $this->data['core_url'].'single_product/'.$product_id;
+
+        $token = session()->get('token');
+
+        $this->data['product'] =  $this->getData($token,$url);
+//        dd($this->data['product']);
+
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+    }
+
+
+
+    public function paymentSuccess()
+    {
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.payment-success' :
+                                        $this->data['view'] = 'ecommerce-store.unauthorized';
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+    }
+
+    public function addReview(Request $request , $product_id){
+
+        $headers = [
+            'Accept' => 'application/json',
+            "Content-Type" => "application/json"
+        ];
+
+        $response =  Http::withoutVerifying()->withHeaders($headers)
+            ->post(env('CORE_URL').'create-product-review', [
+                'full_name' => $request->full_name,
+                'email'     => $request->email,
+                'reviews'   => $request->reviews,
+                'rating'    => $request->rating,
+                'product_id'=> $product_id]);
+
+        $reviews = json_decode($response);
+
+        return response()->json(['success' => true , 'data' => $reviews]);
+    }
+
+
+    public function productCategories()
+    {
+
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.category' :$this->data['view'] = 'ecommerce-store.unauthorized';
+
+        if($this->data['isAuthenticated']) {
+            $headers = [
+                'Accept' => 'application/json',
+                "Content-Type" => "application/json"
+
+            ];
+            $parentCategory = Http::withoutVerifying()->withHeaders($headers)
+                ->get(env('CORE_URL') . 'parent_category');
+
+            $parentCategories = json_decode($parentCategory);
+
+            $modifiedArray = [];
+
+            foreach ($parentCategories as $index => $cat) {
+
+                $parts = explode(',', $cat);
+                $parts = array_map('trim', $parts);
+                $modifiedArray[] = $parts[0];
+
+                $existingSubCategories = [];
+
+                if (count($parts) > 1) {
+
+                    foreach ($parts as $j => $part) {
+                        $existingCat = str_replace(['[', ']'], '', $part);
+                        if ($j !== 0) {
+                            $subCat = str_replace('"', '', $existingCat);
+                            $existingSubCategories[] = $subCat;
+                        }
+                    }
+                    $modifiedArray[] = $existingSubCategories;
+                }
+
+            }
+
+//        $this->data['categories'] =  json_decode($parentCategory);
+
+            $this->data['categories'] = $modifiedArray;
+
+
+            $parentCategory = Http::withoutVerifying()->withHeaders($headers)
+                ->post(env('CORE_URL') . 'filter-product-parent-category/', ['category' => request()->category, 'page' => request()->page]);
+
+            $this->data['products'] = json_decode($parentCategory);
+
+            $this->data['category'] = request()->category;
+
+            $this->data['pagination'] = $this->data['products']->meta->pagination;
+//            dd( $this->data['pagination']);
+
+            $this->data['pagination_total'] = $this->data['products']->meta->pagination->total_pages;
+
+
+            $this->data['current_page'] = $this->data['pagination']->current_page;
+
+            $this->data['per_page'] = $this->data['pagination']->per_page;
+
+            $this->data['next'] = $this->data['pagination']->links->next ?? null;
+
+            $this->data['previous'] = $this->data['pagination']->links->previous ?? null;
+
+            $this->data['links'] = $this->data['pagination']->links == [] ? 0 : 1;
+
+            if (!is_null($this->data['next'])) {
+
+                $this->data['nextArray'] = explode("?", $this->data['next']);
+
+                $this->data['nextString'] = '?' . $this->data['nextArray'][1];
+
+            } else {
+
+                $this->data['nextString'] = '';
+            }
+
+
+            if (!is_null($this->data['previous'])) {
+
+                $this->data['previousArray'] = explode("?", $this->data['previous']);
+
+                $this->data['previousString'] = '?' . $this->data['previousArray'][1];
+
+            } else {
+
+                $this->data['previousString'] = '';
+            }
+        }
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+
+    }
+
+
+    public function userProfile($user_id)
+    {
+
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.profile':
+                                         $this->data['view'] = 'ecommerce-store.unauthorized';
+
+        $this->data['user'] = \App\Models\User::where('id', $user_id)->first();
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+    }
+
+    public function updateUserProfile(Request $request, $user_id)
+    {
+        $this->validate($request, [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:11',
+        ]);
+       $userProfile  = \App\Models\User::where('id', $user_id)->first();
+
+       if($userProfile){
+
+           $userProfile->update([
+               'first_name' => $request->first_name,
+               'last_name' => $request->last_name,
+               'phone' => $request->phone,
+           ]);
+
+           toastr()->success('Profile updated successfully');
+
+           return back();
+       }
+
+        toastr()->error('Profile update not successful');
+
+        return back();
+    }
+
+
+    public function myOrders($user_id)
+    {
+        $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.order-history': $this->data['view'] = 'ecommerce-store.unauthorized';
+
+        $this->data['orders']  = \App\Models\Order::where('user_id',$user_id)->get();
+
+        return view('modules-marketplace::'.$this->data['view'] ,$this->data);
     }
 
 }
