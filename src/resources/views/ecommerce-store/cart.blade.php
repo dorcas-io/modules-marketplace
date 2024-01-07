@@ -50,8 +50,7 @@
                     @foreach($carts as $id => $details)
                         @php $total += $details['price'] * $details['quantity'] @endphp
                     <tbody>
-                    <tr>
-
+                    <tr data-id="{{ $id }}">
                         <td>
                             <a href="#"><img src="{{$details['image'] ?? asset('assets/images/product/1.jpg')}}" alt=""></a>
                         </td>
@@ -60,14 +59,14 @@
                                 <div class="col-xs-3">
                                     <div class="qty-box">
                                         <div class="input-group">
-                                            <input type="text" name="quantity" class="form-control input-number" value="1">
+                                            <input type="text" name="quantity" class="form-control input-number update-cart_sm quantity_sm" value="{{ $details['quantity'] }}">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-xs-3">
-                                    <h2 class="td-color"> &#8358; {{ number_format($details['price']) }}</h2></div>
+                                    <h2 class="td-color"> &#8358; {{ number_format($details['quantity'] * $details['price']) }}</h2></div>
                                 <div class="col-xs-3">
-                                    <h2 class="td-color"><a href="#" class="icon"><i class="ti-close"></i></a></h2></div>
+                                    <h2 class="td-color"><a href="#" class="icon remove-from-cart"><i class="ti-close"></i></a></h2></div>
                             </div>
                         </td>
                         <td>
@@ -75,13 +74,13 @@
                         <td>
                             <div class="qty-box">
                                 <div class="input-group">
-                                    <input type="number" name="quantity" class="form-control input-number" value="{{ $details['quantity'] }}">
+                                    <input type="number" name="quantity" class="form-control input-number quantity update-cart" value="{{ $details['quantity'] }}">
                                 </div>
                             </div>
                         </td>
-                        <td><a href="#" class="icon"><i class="ti-close"></i></a></td>
+                        <td><a href="#" class="icon remove-from-cart"><i class="ti-close"></i></a></td>
                         <td>
-                            <h2 class="td-color"> &#8358; {{  number_format($details['price']) }}</h2></td>
+                            <h2 class="td-color"> &#8358; {{ number_format($details['quantity'] * $details['price']) }}</h2></td>
                     </tr>
                     </tbody>
                     @endforeach

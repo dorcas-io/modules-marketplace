@@ -16,6 +16,8 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers', 'midd
 Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'middleware' => ['web'],], function() {
     Route::get('/', 'ModulesMarketplaceStore@storeIndex')->name('marketplace');
     Route::get('add-to-cart/{product_id}', 'ModulesMarketplaceStore@addToCart')->name('add-to-cart');
+    Route::get('add-to-wishlist/{product_id}', 'ModulesMarketplaceStore@addToWishList')->name('add-to-wishlist');
+    Route::get('merge-wishlist-to-cart','ModulesMarketplaceStore@addWishListToCart')->name('merge-wishlist-to-cart');
     Route::get('checkout', 'ModulesMarketplaceStore@checkout')->name('checkout');
     Route::get('cart', 'ModulesMarketplaceStore@viewCart')->name('view-cart');
     Route::get('checkout', 'ModulesMarketplaceStore@checkout')->name('checkout');
@@ -34,6 +36,9 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'midd
     Route::get('profile/{user_id}','ModulesMarketplaceStore@userProfile')->name('user-profile');
     Route::post('update-profile/{user_id}','ModulesMarketplaceStore@updateUserProfile')->name('update-user-profile');
     Route::get('orders/{user_id}','ModulesMarketplaceStore@myOrders')->name('user-orders');
+
+    Route::patch('update-cart','ModulesMarketplaceStore@updateCart')->name('update.cart');
+    Route::delete('remove-from-cart','ModulesMarketplaceStore@removeCart')->name('remove.from.cart');
 
 
     Route::get('/share-product', function(){

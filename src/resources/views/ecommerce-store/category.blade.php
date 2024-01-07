@@ -41,10 +41,10 @@
                                 <div class="col-sm-12">
                                     <div class="top-banner-wrapper">
                                         <a href="#"><img src="{{asset('assets/images/about/about-us.jpg')}}" class="img-fluid " alt=""></a>
-                                        <div class="top-banner-content small-section">
-                                            <h5>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</h5>
-                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
-                                        </div>
+{{--                                        <div class="top-banner-content small-section">--}}
+{{--                                            <h5>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</h5>--}}
+{{--                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>--}}
+{{--                                        </div>--}}
                                     </div>
                                     <div class="collection-product-wrapper">
                                         <div class="product-top-filter">
@@ -87,6 +87,7 @@
                                         </div>
                                         <div class="product-wrapper-grid">
                                             <div class="row">
+                                                @if(count($products->data)> 0)
                                                 @foreach($products->data as $index => $product)
                                                 <div class="col-lg-2 col-md-4 col-6 col-grid-box">
                                                     <div class="product-box">
@@ -142,6 +143,13 @@
                                                     </div>
                                                 </div>
                                                 @endforeach
+                                                @else
+                                                    <div class="col-lg-2 col-md-4 col-6 col-grid-box">
+                                                        <div class="product-box">
+                                                            <h3>No Product Available for this Category</h3>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
                                         @if($links)

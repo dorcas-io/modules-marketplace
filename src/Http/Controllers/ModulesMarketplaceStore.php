@@ -44,7 +44,33 @@ class ModulesMarketplaceStore extends Controller {
 
              $this->data['flash_sales'] = $this->getData($token,$url);
 
-             $this->data['flash_sales'] = $this->data['flash_sales']->data;
+             $url =  $this->data['core_url'].'last_chance_to_buy?limit=2';
+
+             $this->data['last_chance_to_buy']= $this->getData($token,$url);
+
+            $url =  $this->data['core_url'].'buy_now?limit=2';
+
+            $this->data['buy_now']= $this->getData($token,$url);
+
+
+            $url =  $this->data['core_url'].'buy_now?limit=3';
+
+            $this->data['editors_pick_one']= $this->getData($token,$url);
+
+            $url =  $this->data['core_url'].'buy_now?limit=3';
+
+            $this->data['editors_pick_two']= $this->getData($token,$url);
+
+
+            $this->data['last_chance_to_buy'] =  $this->data['last_chance_to_buy']->data;
+            $this->data['buy_now'] =  $this->data['buy_now']->data;
+            $this->data['flash_sales'] = $this->data['flash_sales']->data;
+            $this->data['editors_pick_one'] = $this->data['editors_pick_one']->data;
+            $this->data['editors_pick_two'] = $this->data['editors_pick_two']->data;
+
+//            dd( $this->data['editors_pick_one']);
+
+
 
          }
 
@@ -78,7 +104,7 @@ class ModulesMarketplaceStore extends Controller {
                     "quantity"   => is_null(request()->quantity)  ? 1 : request()->quantity,
                     'company_id' => $this->data['product']->data->company->uuid,
                     "price"      => $this->data['product']->data->prices->data[0]->unit_price->raw,
-                    "image"      => $this->data['product']->product_images[0]->url ?? null ,
+                    "image"      => $this->data['product']->data->images->data[0]->url ?? null ,
                     'product_id' => $product_id
                 ];
 
@@ -870,6 +896,91 @@ class ModulesMarketplaceStore extends Controller {
         $this->data['orders']  = \App\Models\Order::where('user_id',$user_id)->get();
 
         return view('modules-marketplace::'.$this->data['view'] ,$this->data);
+    }
+
+    public function addToWishList($product_id)
+    {
+        $token = session()->get('token');
+
+        $url =  $this->data['core_url'].'single_product/'.$product_id;
+
+        $this->data['product'] = $this->getData($token,$url);
+
+        $wishlist = session()->get('wishlist', []);
+
+
+        if(isset($wishlist[$product_id])) {
+
+            is_null(request()->quantity) ? $wishlist[$product_id]['quantity']++ : $wishlist[$product_id]['quantity'] += request()->quantity;
+
+        } else {
+
+            $wishlist[$product_id] = [
+                "name"       => $this->data['product']->data->name,
+                "quantity"   => is_null(request()->quantity)  ? 1 : request()->quantity,
+                'company_id' => $this->data['product']->data->company->uuid,
+                "price"      => $this->data['product']->data->prices->data[0]->unit_price->raw,
+                "image"      => $this->data['product']->product_images[0]->url ?? null ,
+                'product_id' => $product_id
+            ];
+
+        }
+
+        session()->put('wishlist', $wishlist);
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Item added to wishlist.',
+            'cart' => $wishlist,
+        ]);
+
+    }
+
+    public function addWishListToCart(){
+
+        $cart = session()->get('cart',[]);
+
+        $wishlist = session()->get('wishlist');
+
+        $mergedCart_wishlist_Array = collect($cart)->merge($wishlist)->all();
+
+
+        session()->forget('cart');
+
+        session()->put('cart',$mergedCart_wishlist_Array);
+
+        session()->forget('wishlist');
+
+        toastr()->success('Wishlist Added to cart successfully');
+
+        return back();
+
+
+    }
+
+    public function removeCart(Request $request)
+    {
+        if($request->id) {
+            $cart = session()->get('cart');
+            if(isset($cart[$request->id])) {
+                unset($cart[$request->id]);
+                session()->put('cart', $cart);
+            }
+//            session()->flash('success', 'Product removed successfully');
+            toastr()->success('Product removed successfully');
+        }
+    }
+
+    public function updateCart(Request $request)
+    {
+        if($request->id && $request->quantity){
+            $cart = session()->get('cart');
+            $cart[$request->id]["quantity"] = $request->quantity;
+            session()->put('cart', $cart);
+//            session()->flash('success', 'Cart updated successfully');
+            toastr()->success('Cart updated successfully');
+        }
     }
 
 }

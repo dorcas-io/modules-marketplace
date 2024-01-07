@@ -120,11 +120,11 @@
                                         <div class="cart-info">
                                             <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                         class="ti-shopping-cart"></i></button>
-                                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
+                                            <a href="{{$product->id}}" title="Add to Wishlist" class="add-to-wishlist"><i class="ti-heart"
                                                                                                     aria-hidden="true"></i></a>
-                                            <a href="javascript:void(0)" data-bs-toggle="modal"
-                                               data-bs-target="#quick-view" title="Quick View"><i class="ti-search"
-                                                                                                  aria-hidden="true"></i></a>
+{{--                                            <a href="javascript:void(0)" data-bs-toggle="modal"--}}
+{{--                                               data-bs-target="#quick-view" title="Quick View"><i class="ti-search"--}}
+{{--                                                                                                  aria-hidden="true"></i></a>--}}
                                             <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
                                                                                       aria-hidden="true"></i></a>
                                         </div>
@@ -135,8 +135,6 @@
                                     </div>
                                     <div class="addtocart_box">
                                         <div class="addtocart_detail">
-
-
                                             <div>
                                                 <div class="color">
                                                     @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
@@ -324,50 +322,64 @@
             <div class="row">
                 <div class="col-xl-12 p-0 ratio_asos">
                     <div class="slider-6 no-arrow">
+                        @foreach($flash_sales as $index => $product)
                         <div>
                             <div class="product-box">
                                 <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/1.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
+                                    <a href="#">
+                                        <img src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" class=" img-fluid bg-img"
+                                                     alt="">
+                                    </a>
                                     <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
+                                     <button tabindex="0" class="addcart-box" title="Quick shop"><i
+                                                        class="ti-shopping-cart"></i></button>
+                                            <a href="{{$product->id}}" title="Add to Wishlist"
+                                               class="add-to-wishlist"><i class="ti-heart" aria-hidden="true"></i>
+                                            </a>
+{{--                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"--}}
+{{--                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+                                        <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
+                                                                                                     aria-hidden="true"></i></a>
                                     </div>
                                 </div>
                                 <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
+                                    <a href="#"><h6>{{$product->name}}</h6></a>
+                                    <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
                                 </div>
                                 <div class="addtocart_box">
                                     <div class="addtocart_detail">
                                         <div>
                                             <div class="color">
-                                                <h5>color</h5>
+                                                @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
+                                                    <h5>color</h5>
+                                                @endif
                                                 <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
+                                                    @foreach($product->variants as $variant)
+                                                        @if(strtolower($variant->product_variant_type) === 'colour')
+                                                            <li class="{{$variant->product_variant}}"></li>
+                                                        @endif
+                                                    @endforeach
                                                 </ul>
                                             </div>
+
                                             <div class="size">
-                                                <h5>size</h5>
+                                                @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
+                                                    <h5>size</h5>
+                                                @endif
                                                 <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
+                                                    @foreach($product->variants as $variant)
+                                                        @if(strtolower($variant->product_variant_type) === 'size')
+                                                            <li class="{{$variant->product_variant}}"></li>
+                                                        @endif
+                                                    @endforeach
                                                 </ul>
                                             </div>
+
                                             <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
+                                                {{--                                                class="add-to-cart-btn"--}}
+                                                {{--                                                <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+                                                <a href="{{$product->id}}" class="add-to-cart-btn">add to cart</a>
+
                                             </div>
                                         </div>
                                     </div>
@@ -377,324 +389,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/2.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/8.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/4.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/5.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/7.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/3.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -713,50 +408,58 @@
                     </div>
                     <div class="slider-2">
                         <div>
+                            @foreach($last_chance_to_buy  as $index => $product)
                             <div class="product-box">
                                 <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/14.jpg" class=" img-fluid bg-img"
+                                    <a href="#">
+                                        <img src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" class=" img-fluid bg-img"
                                                      alt=""></a>
                                     <div class="cart-info">
                                         <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                     class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
+                                        <a href="{{$product->id}}"
+                                           class="add-to-wishlist" title="Add to Wishlist">
+                                            <i class="ti-heart" aria-hidden="true"></i></a>
+                                        <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
+                                                                                                     aria-hidden="true"></i>
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
+                                    <a href="#"><h6>{{$product->name}}</h6></a>
+                                    <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
                                 </div>
                                 <div class="addtocart_box">
                                     <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
+                                        <div class="color">
+                                            @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
                                                 <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
+                                            @endif
+                                            <ul class="color-variant">
+                                                @foreach($product->variants as $variant)
+                                                    @if(strtolower($variant->product_variant_type) === 'colour')
+                                                        <li class="{{$variant->product_variant}}"></li>
+                                                    @endif
+                                                @endforeach
+                                            </ul>
+                                        </div>
+
+                                        <div class="size">
+                                            @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
                                                 <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
+                                            @endif
+                                            <ul class="size-box">
+                                                @foreach($product->variants as $variant)
+                                                    @if(strtolower($variant->product_variant_type) === 'size')
+                                                        <li class="{{$variant->product_variant}}"></li>
+                                                    @endif
+                                                @endforeach
+                                            </ul>
+                                        </div>
+
+                                        <div class="addtocart_btn">
+                                            <a href="{{$product->id}}" class="add-to-cart-btn">add to cart</a>
+
                                         </div>
                                     </div>
                                     <div class="close-cart">
@@ -764,103 +467,61 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/11.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                         <div>
+                            @foreach($buy_now  as $index => $product)
                             <div class="product-box">
                                 <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/12.jpg" class=" img-fluid bg-img"
+                                    <a href="#"><img src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}"
+                                                     class=" img-fluid bg-img"
                                                      alt=""></a>
                                     <div class="cart-info">
                                         <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                     class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
+                                        <a href="{{$product->id}}"
+                                           class="add-to-wishlist" title="Add to Wishlist">
+                                            <i class="ti-heart" aria-hidden="true"></i></a>
+                                        <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
+                                                                                                     aria-hidden="true"></i>
+                                        </a>
                                     </div>
                                 </div>
                                 <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
+                                    <a href="#"><h6>{{$product->name}}</h6></a>
+                                    <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
                                 </div>
                                 <div class="addtocart_box">
                                     <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
+                                        <div class="color">
+                                            @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
                                                 <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
+                                            @endif
+                                            <ul class="color-variant">
+                                                @foreach($product->variants as $variant)
+                                                    @if(strtolower($variant->product_variant_type) === 'colour')
+                                                        <li class="{{$variant->product_variant}}"></li>
+                                                    @endif
+                                                @endforeach
+                                            </ul>
+                                        </div>
+
+                                        <div class="size">
+                                            @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
                                                 <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
+                                            @endif
+                                            <ul class="size-box">
+                                                @foreach($product->variants as $variant)
+                                                    @if(strtolower($variant->product_variant_type) === 'size')
+                                                        <li class="{{$variant->product_variant}}"></li>
+                                                    @endif
+                                                @endforeach
+                                            </ul>
+                                        </div>
+
+                                        <div class="addtocart_btn">
+                                            <a href="{{$product->id}}" class="add-to-cart-btn">add to cart</a>
+
                                         </div>
                                     </div>
                                     <div class="close-cart">
@@ -868,265 +529,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/13.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/14.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/3.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/4.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="product-box">
-                                <div class="img-block">
-                                    <a href="#"><img src="../assets/images/fashion/pro/6.jpg" class=" img-fluid bg-img"
-                                                     alt=""></a>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                </div>
-                                <div class="product-info product-content">
-                                    <a href="#"><h6>richard mcClintock</h6></a>
-                                    <h5>$963.00</h5>
-                                </div>
-                                <div class="addtocart_box">
-                                    <div class="addtocart_detail">
-                                        <div>
-                                            <div class="color">
-                                                <h5>color</h5>
-                                                <ul class="color-variant">
-                                                    <li class="light-purple active"></li>
-                                                    <li class="theme-blue"></li>
-                                                    <li class="theme-color"></li>
-                                                </ul>
-                                            </div>
-                                            <div class="size">
-                                                <h5>size</h5>
-                                                <ul class="size-box">
-                                                    <li class="active">xs</li>
-                                                    <li>s</li>
-                                                    <li>m</li>
-                                                    <li>l</li>
-                                                    <li>xl</li>
-                                                </ul>
-                                            </div>
-                                            <div class="addtocart_btn">
-                                                <a href="javascript:void(0)" data-bs-toggle="modal" class="closeCartbox"
-                                                   data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="close-cart">
-                                        <i class="fa fa-times" aria-hidden="true"></i>
-                                    </div>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -1139,51 +542,58 @@
                     </div>
                     <div class="slide-2">
                         <div>
+                            @foreach($editors_pick_one as $index => $product)
                             <div class="media product-box">
                                 <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/1.jpg" alt="">
+                                    <img class="img-fluid ed"
+                                         src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" alt="">
                                 </a>
                                 <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
+                                    <a href="#" tabindex="0">
+                                        <h6>{{$product->name}}</h6>
                                     </a>
-                                    <h5>$963.00</h5>
+                                    <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
                                     <div class="cart-info">
                                         <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                     class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
+                                        <a href="{{$product->id}}"
+                                           class="add-to-wishlist" title="Add to Wishlist">
+                                            <i class="ti-heart" aria-hidden="true"></i></a>
+                                        <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
+                                                                                                     aria-hidden="true"></i>
+                                        </a>
                                     </div>
                                     <div class="addtocart_box">
                                         <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
+                                            <div class="color">
+                                                @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
                                                     <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
+                                                @endif
+                                                <ul class="color-variant">
+                                                    @foreach($product->variants as $variant)
+                                                        @if(strtolower($variant->product_variant_type) === 'colour')
+                                                            <li class="{{$variant->product_variant}}"></li>
+                                                        @endif
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+
+                                            <div class="size">
+                                                @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
                                                     <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
+                                                @endif
+                                                <ul class="size-box">
+                                                    @foreach($product->variants as $variant)
+                                                        @if(strtolower($variant->product_variant_type) === 'size')
+                                                            <li class="{{$variant->product_variant}}"></li>
+                                                        @endif
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+
+                                            <div class="addtocart_btn">
+                                                <a href="{{$product->id}}" class="add-to-cart-btn">add to cart</a>
+
                                             </div>
                                         </div>
                                         <div class="close-cart">
@@ -1192,434 +602,70 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/12.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/3.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                         <div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/14.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
+                            @foreach($editors_pick_two as $index => $product)
+                                <div class="media product-box">
+                                    <a href="" tabindex="0">
+                                        <img class="img-fluid ed"
+                                             src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" alt="">
                                     </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
+                                    <div class="media-body align-self-center">
+                                        <a href="#" tabindex="0">
+                                            <h6>{{$product->name}}</h6>
+                                        </a>
+                                        <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $product->prices->data[0]->unit_price->formatted :0}}</h5>
+                                        <div class="cart-info">
+                                            <button tabindex="0" class="addcart-box" title="Quick shop"><i
+                                                        class="ti-shopping-cart"></i></button>
+                                            <a href="{{$product->id}}"
+                                               class="add-to-wishlist" title="Add to Wishlist">
+                                                <i class="ti-heart" aria-hidden="true"></i></a>
+                                            <a href="{{url('/product/'.$product->id)}}"  title="View"><i class="ti-eye"
+                                                                                                         aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                        <div class="addtocart_box">
+                                            <div class="addtocart_detail">
                                                 <div class="color">
-                                                    <h5>color</h5>
+                                                    @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'colour')
+                                                        <h5>color</h5>
+                                                    @endif
                                                     <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
+                                                        @foreach($product->variants as $variant)
+                                                            @if(strtolower($variant->product_variant_type) === 'colour')
+                                                                <li class="{{$variant->product_variant}}"></li>
+                                                            @endif
+                                                        @endforeach
                                                     </ul>
                                                 </div>
+
                                                 <div class="size">
-                                                    <h5>size</h5>
+                                                    @if(isset($product->variants[0]) && strtolower($product->variants[0]->product_variant_type) === 'size')
+                                                        <h5>size</h5>
+                                                    @endif
                                                     <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
+                                                        @foreach($product->variants as $variant)
+                                                            @if(strtolower($variant->product_variant_type) === 'size')
+                                                                <li class="{{$variant->product_variant}}"></li>
+                                                            @endif
+                                                        @endforeach
                                                     </ul>
                                                 </div>
+
                                                 <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
+                                                    <a href="{{$product->id}}" class="add-to-cart-btn">add to cart</a>
+
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
+                                            <div class="close-cart">
+                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/5.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/6.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/7.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/8.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="media product-box">
-                                <a href="" tabindex="0">
-                                    <img class="img-fluid ed" src="../assets/images/fashion/pro/10.jpg" alt="">
-                                </a>
-                                <div class="media-body align-self-center">
-                                    <a href="product-page(no-sidebar).html" tabindex="0">
-                                        <h6>richard mcClintock</h6>
-                                    </a>
-                                    <h5>$963.00</h5>
-                                    <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart"
-                                                                                                aria-hidden="true"></i></a>
-                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"
-                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                                        <a href="compare.html" title="Compare"><i class="ti-reload"
-                                                                                  aria-hidden="true"></i></a>
-                                    </div>
-                                    <div class="addtocart_box">
-                                        <div class="addtocart_detail">
-                                            <div>
-                                                <div class="color">
-                                                    <h5>color</h5>
-                                                    <ul class="color-variant">
-                                                        <li class="light-purple active"></li>
-                                                        <li class="theme-blue"></li>
-                                                        <li class="theme-color"></li>
-                                                    </ul>
-                                                </div>
-                                                <div class="size">
-                                                    <h5>size</h5>
-                                                    <ul class="size-box">
-                                                        <li class="active">xs</li>
-                                                        <li>s</li>
-                                                        <li>m</li>
-                                                        <li>l</li>
-                                                        <li>xl</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="addtocart_btn">
-                                                    <a href="javascript:void(0)" data-bs-toggle="modal"
-                                                       class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add
-                                                        to cart</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="close-cart">
-                                            <i class="fa fa-times" aria-hidden="true"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -1762,7 +808,7 @@
                                 <img src="../assets/images/logo/2.png" class=" img-fluid" alt="">
                             </div>
                             <div class="logo-img">
-                                <img src="../assets/images/logo/3.png" class=" img-fluid" alt="">
+                                <img src="{{asset('assets/images/logo/3.png')}}" class=" img-fluid" alt="">
                             </div>
                         </div>
                     </div>
@@ -1776,8 +822,8 @@
                             <div>
                                 <h5>download the big market app</h5>
                                 <div class="app-buttons">
-                                    <a href="#"><img src="../assets/images/app/app-storw.png" class=" img-fluid" alt=""></a>
-                                    <a href="#"><img src="../assets/images/app/play-store.png" class=" img-fluid"
+                                    <a href="#"><img src="{{asset('assets/images/app/app-storw.png')}}" class=" img-fluid" alt=""></a>
+                                    <a href="#"><img src="{{asset('assets/images/app/play-store.png')}}" class=" img-fluid"
                                                      alt=""></a>
                                 </div>
                             </div>
