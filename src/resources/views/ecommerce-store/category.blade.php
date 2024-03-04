@@ -91,22 +91,36 @@
                                                 @foreach($products->data as $index => $product)
                                                 <div class="col-lg-2 col-md-4 col-6 col-grid-box">
                                                     <div class="product-box">
-                                                        <div class="img-block">
+                                                        <div class="img-block"  style="position:relative;">
                                                             <a href="{{url('/product/'.$product->id)}}">
                                                                 <img src="{{$product->product_images[0]->url ?? 'assets/images/product/6.jpg'}}" class=" img-fluid bg-img" alt="">
                                                             </a>
                                                             <div class="cart-details">
                                                                 <button tabindex="0" class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                                                                <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
+{{--                                                                <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                                                                <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
                                                                 <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
                                                             </div>
+                                                            @if($product->has_discount === '1')
+                                                                <span style="position: absolute;top:8%; left: 5%; background : var(--company-primary-color); padding:2%;color:#fff; border-radius: 10%; "> - {{$product->discount_value}}% </span>
+                                                            @endif
                                                         </div>
+                                                        @php
+                                                            $discountedAmount = 0;
+                                                            if($product->has_discount === '1'){
+                                                             $caclDiscount =   $product->discount_value/100 * $product->prices->data[0]->unit_price->raw;
+                                                             $discountedAmount = $product->prices->data[0]->unit_price->raw -  $caclDiscount  ;
+                                                            }
+                                                        @endphp
                                                         <div class="product-info">
                                                             <div>
                                                                 <a href="#"><h6>{{$product->name}}</h6></a>
                                                                 <p>{{$product->description}}</p>
-                                                                <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{$product->prices->data[0]->unit_price->formatted ?? 0}}</h5>
+                                                                @if($product->has_discount === '1')
+                                                                <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{ isset($product->prices->data[0])? $discountedAmount  :0}}</h5>
+                                                                @else
+                                                                    <h5>{{$product->prices->data[0]->currency ?? 'NGN'}} {{$product->prices->data[0]->unit_price->formatted ?? 0}}</h5>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <div class="addtocart_box">

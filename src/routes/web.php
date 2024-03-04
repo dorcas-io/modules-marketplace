@@ -15,7 +15,7 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers', 'midd
 
 Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'middleware' => ['web'],], function() {
     Route::get('/', 'ModulesMarketplaceStore@storeIndex')->name('marketplace');
-    Route::get('add-to-cart/{product_id}', 'ModulesMarketplaceStore@addToCart')->name('add-to-cart');
+    Route::get('add-to-cart/{product_id}/', 'ModulesMarketplaceStore@addToCart')->name('add-to-cart');
     Route::get('add-to-wishlist/{product_id}', 'ModulesMarketplaceStore@addToWishList')->name('add-to-wishlist');
     Route::get('merge-wishlist-to-cart','ModulesMarketplaceStore@addWishListToCart')->name('merge-wishlist-to-cart');
     Route::get('checkout', 'ModulesMarketplaceStore@checkout')->name('checkout');
@@ -29,7 +29,7 @@ Route::group(['namespace' => 'Dorcas\ModulesMarketplace\Http\Controllers' ,'midd
     Route::get('/initialize-payment', 'ModulesMarketplaceStore@initialize')->name('initialize-pay');
     Route::get('/payment-callback', 'ModulesMarketplaceStore@callback')->name('payment-callback');
     Route::get('/payment-success', 'ModulesMarketplaceStore@paymentSuccess')->name('payment-success');
-    Route::get('/product/{product_id}', 'ModulesMarketplaceStore@singleProduct')->name('single-product');
+    Route::get('/product/{product_id}/', 'ModulesMarketplaceStore@singleProduct')->name('single-product');
     Route::post('add-review/{product_id}', 'ModulesMarketplaceStore@addReview')->name('add-review');
     Route::post('add-review/{product_id}', 'ModulesMarketplaceStore@addReview')->name('add-review');
     Route::get('categories/{category}','ModulesMarketplaceStore@productCategories')->name('product-category');

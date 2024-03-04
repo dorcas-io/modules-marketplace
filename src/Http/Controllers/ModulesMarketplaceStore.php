@@ -19,6 +19,7 @@ use KingFlamez\Rave\Facades\Rave as Flutterwave;
 class ModulesMarketplaceStore extends Controller {
 
 
+
     public  $gmaps;
 
     public function __construct()
@@ -27,6 +28,7 @@ class ModulesMarketplaceStore extends Controller {
         $this->data['core_url'] = env("CORE_URL");
         $this->gmaps = new \yidas\googleMaps\Client(['key'=>env('CREDENTIAL_GOOGLE_API_KEY')]);
         $this->data['logistics_settings'] = config('delivery.providers');
+        $this->data['marketplace_config'] = config('marketPlaceConfig');
     }
 
 
@@ -40,39 +42,242 @@ class ModulesMarketplaceStore extends Controller {
 
              $token = session()->get('token');
 
-             $url =  $this->data['core_url'].'all_products';
+             $topSidePromotions  = [];
 
-             $this->data['flash_sales'] = $this->getData($token,$url);
+            $this->data['hasDiscount']= null;
 
-             $url =  $this->data['core_url'].'last_chance_to_buy?limit=2';
+             $url =  $this->data['core_url'].'feature-product';
 
-             $this->data['last_chance_to_buy']= $this->getData($token,$url);
+             $top_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSection1']['parameters']['position'];
 
-            $url =  $this->data['core_url'].'buy_now?limit=2';
+             $topSidePromotionsCheck = \App\Models\Promotion::where('promotions_space',$top_side_promotions)->where('status','active')->first();
 
-            $this->data['buy_now']= $this->getData($token,$url);
+             $this->data['topSidePromo'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSection1']['parameters']['title'] = !is_null($topSidePromotionsCheck) ? $topSidePromotionsCheck->promotions_name : 'Flash Sale';
 
+             $this->data['counter'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['counter']['counter'];
 
-            $url =  $this->data['core_url'].'buy_now?limit=3';
-
-            $this->data['editors_pick_one']= $this->getData($token,$url);
-
-            $url =  $this->data['core_url'].'buy_now?limit=3';
-
-            $this->data['editors_pick_two']= $this->getData($token,$url);
+             if($topSidePromotionsCheck){
+                 $topSidePromotions = \App\Models\PromotionProduct::where('promotions_id',$topSidePromotionsCheck->id)->where('status','active')->pluck('product_id')->toArray();
+             }
 
 
-            $this->data['last_chance_to_buy'] =  $this->data['last_chance_to_buy']->data;
-            $this->data['buy_now'] =  $this->data['buy_now']->data;
-            $this->data['flash_sales'] = $this->data['flash_sales']->data;
-            $this->data['editors_pick_one'] = $this->data['editors_pick_one']->data;
-            $this->data['editors_pick_two'] = $this->data['editors_pick_two']->data;
+             if(!empty($topSidePromotions )){
 
-//            dd( $this->data['editors_pick_one']);
+                 $product_ids =  ['product_ids' => $topSidePromotions];
+
+                 $this->data['topSideProducts'] =  $this->postData($token,$url,$product_ids);
+
+                 $this->data['topSideProducts'] =  $this->data['topSideProducts']->data;
+
+             }else{
+
+                 $this->data['topSideProducts'] =  [];
+
+             }
 
 
 
-         }
+            $midSidePromotions  = [];
+
+            $this->data['midPromo_hasDiscount']= null;
+            $this->data['midPromo_DiscountValue'] = 0;
+
+            $mid_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSection2']['parameters']['position'];
+
+            $midSidePromotionsCheck = \App\Models\Promotion::where('promotions_space',$mid_side_promotions)->where('status','active')->first();
+
+            $this->data['midSidePromo'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSection2']['parameters']['title'] = !is_null($midSidePromotionsCheck) ? $midSidePromotionsCheck->promotions_name : 'What\'s New';
+
+            if($midSidePromotionsCheck){
+
+                $midSidePromotions = \App\Models\PromotionProduct::where('promotions_id',$midSidePromotionsCheck->id)->where('status','active')->pluck('product_id')->toArray();
+
+            }
+
+
+            if(!empty($midSidePromotions )){
+
+                $product_ids =  ['product_ids' => $midSidePromotions];
+
+                $this->data['midSideProducts'] =  $this->postData($token,$url,$product_ids);
+
+                $this->data['midSideProducts'] =  $this->data['midSideProducts']->data;
+
+            }else{
+
+                $this->data['midSideProducts'] =  [];
+
+            }
+
+
+            $leftSidePromotions  = [];
+
+            $this->data['leftPromo_hasDiscount']= null;
+            $this->data['leftPromo_DiscountValue'] = 0;
+
+            $left_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['position'];
+
+            $leftSidePromotionsCheck = \App\Models\Promotion::where('promotions_space',$left_side_promotions)->where('status','active')->first();
+
+            $this->data['leftSidePromo'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['title'] = !is_null($leftSidePromotionsCheck) ? $leftSidePromotionsCheck->promotions_name : 'Last Chance To Buy';
+
+            if($leftSidePromotionsCheck){
+
+                $leftSidePromotions = \App\Models\PromotionProduct::where('promotions_id',$leftSidePromotionsCheck->id)->where('status','active')->pluck('product_id')->toArray();
+
+                $this->data['leftPromo_hasDiscount'] = $leftSidePromotionsCheck->discount;
+
+                $this->data['leftPromo_DiscountValue'] = (int) $leftSidePromotionsCheck->discount_value;
+
+            }
+
+            if(!empty($leftSidePromotions)){
+
+                $limitByTwoLeft = [];
+                $limitByTwoRight = [];
+                foreach($leftSidePromotions as $index =>  $PromotionsId){
+
+                    if($index < 2){
+                        $limitByTwoLeft[] = $PromotionsId;
+                    }else{
+                        $limitByTwoRight[] = $PromotionsId;
+                    }
+
+                }
+                $product_ids_left =  ['product_ids' => $limitByTwoLeft];
+                $product_ids_right =  ['product_ids' => $limitByTwoRight];
+
+                $url =  $this->data['core_url'].'feature-product?limit=2';
+
+                $this->data['leftSideProductsLeft'] = [];
+                $this->data['leftSideProductsRight'] = [];
+
+                if(!empty($limitByTwoLeft)) {
+                    $this->data['leftSideProductsLeft'] = $this->postData($token, $url, $product_ids_left);
+                    $this->data['leftSideProductsLeft'] =  $this->data['leftSideProductsLeft']->data;
+                }
+
+                if(!empty($limitByTwoRight)){
+                    $this->data['leftSideProductsRight'] = $this->postData($token, $url, $product_ids_right);
+                    $this->data['leftSideProductsRight'] =  $this->data['leftSideProductsRight']->data;
+                }
+
+            }else{
+
+                $this->data['leftSideProductsLeft'] =  [];
+                $this->data['leftSideProductsRight'] =  [];
+
+            }
+
+
+            $rightSidePromotions  = [];
+
+            $this->data['rightPromo_hasDiscount']= null;
+            $this->data['rightPromo_DiscountValue'] = 0;
+
+            $right_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['position'];
+
+            $rightSidePromotionsCheck = \App\Models\Promotion::where('promotions_space',$right_side_promotions)->where('status','active')->first();
+
+            $this->data['rightSidePromo'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['title'] = !is_null($rightSidePromotionsCheck) ? $rightSidePromotionsCheck->promotions_name : 'Editor\'s Pick';
+
+            if($rightSidePromotionsCheck){
+
+                $rightSidePromotions = \App\Models\PromotionProduct::where('promotions_id',$rightSidePromotionsCheck->id)->where('status','active')->pluck('product_id')->toArray();
+
+
+            }
+
+            if(!empty($rightSidePromotions)){
+
+                $limitByTwoLeft = [];
+                $limitByTwoRight = [];
+                foreach($rightSidePromotions as $index =>  $PromotionsId){
+
+                    if($index < 2){
+                        $limitByTwoLeft[] = $PromotionsId;
+                    }else{
+                        $limitByTwoRight[] = $PromotionsId;
+                    }
+
+                }
+                $product_ids_left =  ['product_ids' => $limitByTwoLeft];
+                $product_ids_right =  ['product_ids' => $limitByTwoRight];
+
+                $url =  $this->data['core_url'].'feature-product?limit=3';
+
+                $this->data['rightSideProductsLeft'] = [];
+                $this->data['rightSideProductsRight'] = [];
+
+                if(!empty($limitByTwoLeft)) {
+                    $this->data['rightSideProductsLeft'] = $this->postData($token, $url, $product_ids_left);
+                    $this->data['rightSideProductsLeft'] =  $this->data['rightSideProductsLeft']->data;
+                }
+
+                if(!empty($limitByTwoRight)){
+                    $this->data['rightSideProductsRight'] = $this->postData($token, $url, $product_ids_right);
+                    $this->data['rightSideProductsRight'] =  $this->data['rightSideProductsRight']->data;
+                }
+
+            }else{
+
+                $this->data['rightSideProductsLeft'] =  [];
+                $this->data['rightSideProductsRight'] =  [];
+
+            }
+
+
+            $hero_banner_one = \App\Models\Setting::where('settings_name','hero_banner_one')->first();
+            $heroBannerOneUrl = $hero_banner_one->image_url ?? null;
+
+            $hero_banner_two = \App\Models\Setting::where('settings_name','hero_banner_two')->first();
+            $heroBannerTwoUrl = $hero_banner_two->image_url ?? null;
+
+
+            $side_banner_one = \App\Models\Setting::where('settings_name','side_banner_one')->first();
+            $sideBannerOne = $side_banner_one->image_url ?? null;
+
+            $side_banner_two = \App\Models\Setting::where('settings_name','side_banner_two')->first();
+            $sideBannerTwo = $side_banner_two->image_url ?? null;
+
+            $side_banner_three = \App\Models\Setting::where('settings_name','side_banner_three')->first();
+            $sideBannerThree = $side_banner_three->image_url ?? null;
+
+            $mid_left_Banners = \App\Models\Setting::where('settings_name','mid_left_Banners')->first();
+            $midLeftBannersUrl = $mid_left_Banners->image_url ?? null;
+
+            $mid_right_Banners = \App\Models\Setting::where('settings_name','mid_right_Banners')->first();
+            $midRightBannersUrl = $mid_right_Banners->image_url ?? null;
+
+            $productsBanner = \App\Models\Setting::where('settings_name','productsBanner')->first();
+            $productsBannerUrl = $productsBanner->image_url ?? null;
+
+
+
+
+            $this->data['main_banner1'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['mainBanner1'] =   !is_null($heroBannerOneUrl) ? $heroBannerOneUrl : 'assets/hero/hero1.jpeg';
+            $this->data['main_banner2'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['mainBanner2'] = !is_null( $heroBannerTwoUrl) ?  $heroBannerTwoUrl :'assets/hero/hero1.jpeg';
+
+            $this->data['sideBanner1'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['sideBanner1'] =   !is_null($sideBannerOne) ? $sideBannerOne : 'assets/hero/side-img1.jpeg';
+            $this->data['sideBanner2'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['sideBanner2'] = !is_null($sideBannerTwo) ?  $sideBannerTwo :'assets/hero/side-img2.jpeg';
+            $this->data['sideBanner3'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['sideBanner3'] =   !is_null($sideBannerThree) ? $sideBannerThree : 'assets/hero/side-img3.jpeg';
+
+            $this->data['midBannersLeft'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['midBanners']['leftBanner'] = !is_null($midLeftBannersUrl) ?  $midLeftBannersUrl :'assets/hero/hero_footer_1.jpeg';
+            $this->data['midBannersRight'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['midBanners']['rightBanner'] =   !is_null( $midRightBannersUrl) ? $midRightBannersUrl : 'assets/hero/hero_footer_2.jpeg';
+
+
+            $this->data['productsSectionSpecial'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['productsBanner'] = !is_null($productsBannerUrl) ?  $productsBannerUrl :'assets/hero/hero_footer.jpeg';
+
+
+//            $this->data['main_banner1'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['mainBanner1'] =   !is_null($heroBannerOneUrl) ? $heroBannerOneUrl : 'assets/hero/hero1.jpeg';
+//            $this->data['main_banner2'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['hero']['mainBanner2'] = !is_null( $heroBannerTwoUrl) ?  $heroBannerTwoUrl :'assets/hero/hero1.jpeg';
+
+
+
+
+
+
+        }
 
         return view('modules-marketplace::'.$this->data['view'] ,$this->data);
     }
@@ -84,13 +289,31 @@ class ModulesMarketplaceStore extends Controller {
         if($this->data['isAuthenticated'])
         {
 
+
             $token = session()->get('token');
 
             $url =  $this->data['core_url'].'single_product/'.$product_id;
 
             $this->data['product'] = $this->getData($token,$url);
 
+            $this->data['product_amount'] = $this->data['product']->data->prices->data[0]->unit_price->raw ?? 0;
+
+            $this->data['hasDiscount'] = (int) $this->data['product']->data->has_discount  === 1;
+
+
            $cart = session()->get('cart', []);
+
+            if(!is_null(request()->promo_name)){
+                $promotion = \App\Models\Promotion::where('promotions_name',request()->promo_name)->first();
+            }
+
+            if($this->data['hasDiscount']){
+
+                $this->data['discount_amount'] = $this->applyDiscount($this->data['product']->data->discount_value ,$this->data['product']->data->prices->data[0]->unit_price->raw);
+
+                $this->data['product_amount'] =  $this->data['discount_amount'] ;
+            }
+
 
 
             if(isset($cart[$product_id])) {
@@ -103,7 +326,7 @@ class ModulesMarketplaceStore extends Controller {
                     "name"       => $this->data['product']->data->name,
                     "quantity"   => is_null(request()->quantity)  ? 1 : request()->quantity,
                     'company_id' => $this->data['product']->data->company->uuid,
-                    "price"      => $this->data['product']->data->prices->data[0]->unit_price->raw,
+                    "price"      => $this->data['product_amount'],
                     "image"      => $this->data['product']->data->images->data[0]->url ?? null ,
                     'product_id' => $product_id
                 ];
@@ -356,8 +579,6 @@ class ModulesMarketplaceStore extends Controller {
 
 
                 $routes = json_decode($response);
-
-
 
 
                 if(isset($routes->success) && $routes->success){
@@ -708,6 +929,7 @@ class ModulesMarketplaceStore extends Controller {
     public function singleProduct($product_id)
     {
 
+
         $this->data['isAuthenticated'] ? $this->data['view'] = 'ecommerce-store.single-product':
                                         $this->data['view'] = 'ecommerce-store.unauthorized';
 
@@ -716,12 +938,45 @@ class ModulesMarketplaceStore extends Controller {
         $token = session()->get('token');
 
         $this->data['product'] =  $this->getData($token,$url);
-//        dd($this->data['product']);
 
+        $slug = $this->data['product']->data->categories->data[0]->slug ?? null;
+
+        $url =  $this->data['core_url'].'related_product/'.$slug;
+
+        $this->data['related_products'] =  $this->getData($token,$url);
+
+        $this->data['related_products'] =  $this->data['related_products']->data ?? [];
+//        dd($this->data['related_products']);
+
+
+        $this->data['promo_name'] = request()->promotions;
+
+        $this->data['promotions'] = !is_null(request()->promotions) ? request()->promotions : null;
+        $this->data['hasDiscount'] = false;
+        $this->data['discount_amount'] = 0;
+
+
+        if(!is_null( $this->data['promotions'])){
+            $promotion = \App\Models\Promotion::where('promotions_name',request()->promotions)->first();
+            if( $promotion){
+                $this->data['hasDiscount'] = $promotion->discount === 'active';
+            }
+        }
+       if($this->data['hasDiscount']){
+          $this->data['discount_amount'] = $this->applyDiscount($promotion->discount_value,$this->data['product']->data->prices->data[0]->unit_price->raw);
+           $this->data['hasDiscount_value'] = $promotion->discount_value;
+       }
 
         return view('modules-marketplace::'.$this->data['view'] ,$this->data);
     }
 
+
+    private function applyDiscount($value, $amount)
+    {
+       $discountedValue =  $value /100 * $amount;
+
+       return $amount -  $discountedValue;
+    }
 
 
     public function paymentSuccess()

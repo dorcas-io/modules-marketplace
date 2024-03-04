@@ -124,8 +124,12 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="product-right product-form-box">
-{{--                        <h4><del>$459.00</del><span>55% off</span></h4>--}}
-                        <h3>{{$product->data->default_currency }} {{$product->data->prices->data[0]->unit_price->formatted ?? 0}}</h3>
+                        @if($hasDiscount)
+                        <h4><del> {{$product->data->default_currency }} {{$product->data->prices->data[0]->unit_price->formatted  }}</del><span>{{$hasDiscount_value}}% off</span></h4>
+                        <h3>{{$product->data->default_currency }} {{ $discount_amount ?? 0}}</h3>
+                        @else
+                            <h3>{{$product->data->default_currency }} {{ $product->data->prices->data[0]->unit_price->formatted ?? 0}}</h3>
+                        @endif
                         @if(count($product->data->variants) > 0)
                             @if(isset($product->data->variants[0]) && strtolower($product->data->variants[0]->product_variant_type) === 'colour')
                               <h6 class="product-title">select color</h6>
@@ -165,6 +169,7 @@
                             <div class="qty-box">
                                 <div class="input-group"><span class="input-group-prepend"><button type="button" class="btn quantity-left-minus" data-type="minus" data-field=""><i class="ti-angle-left"></i></button> </span>
                                     <input type="text" name="quantity" class="form-control input-number" value="1"> <span class="input-group-prepend"><button type="button" class="btn quantity-right-plus" data-type="plus" data-field=""><i class="ti-angle-right"></i></button></span></div>
+                                <input type="hidden" value="{{$promo_name}}" name="promo_name"/>
                             </div>
                             </form>
                         </div>
@@ -293,44 +298,71 @@
                 <h2 class="title pt-0">related products</h2></div>
         </div>
         <div class="slide-6">
+            @foreach($related_products as $r_product)
             <div class="">
                 <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/1.jpg" class=" img-fluid bg-img" alt=""></a>
+                    <div class="img-block"  style="position:relative;">
+                        <a href="{{url('/product/'.$r_product->id)}}">
+                            <img
+                             src="{{ isset($r_product->product_images[0]) ? asset($r_product->product_images[0]->url) : asset('/assets/images/product/1.jpg')}}"
+                             class=" img-fluid bg-img" alt="">
+                        </a>
                         <div class="cart-details">
                             <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
                         </div>
+                        @if($r_product->has_discount === '1')
+                            <span style="position: absolute;top:8%; left: 5%; background : var(--company-primary-color); padding:2%;color:#fff; border-radius: 10%; "> - {{$r_product->discount_value}}% </span>
+                        @endif
                     </div>
                     <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
+                        <a href="#"><h6>{{$r_product->name}}</h6></a>
+                        @php
+                            $discountedAmount = 0;
+                            if($r_product->has_discount === '1'){
+                             $caclDiscount =   $r_product->discount_value/100 * $r_product->prices->data[0]->unit_price->raw;
+                             $discountedAmount = $r_product->prices->data[0]->unit_price->raw -  $caclDiscount  ;
+                            }
+                        @endphp
+                        @if($r_product->has_discount === '1')
+                            <h5> {{$r_product->prices->data[0]->currency ?? 'NGN'}} {{ isset($r_product->prices->data[0])? $discountedAmount  :0}} <br> <del><span>  {{$r_product->prices->data[0]->currency ?? 'NGN'}} {{  $r_product->prices->data[0]->unit_price->formatted  ?? 0}} </span></del> </h5>
+                        @else
+                            <h5> {{$r_product->prices->data[0]->currency ?? 'NGN'}} {{ isset($r_product->prices->data[0])? $r_product->prices->data[0]->unit_price->formatted :0}} </h5>
+                        @endif
+
                     </div>
                     <div class="addtocart_box">
                         <div class="addtocart_detail">
                             <div>
                                 <div class="color">
-                                    <h5>color</h5>
+                                    @if(isset($r_product->variants[0]) && strtolower($r_product->variants[0]->product_variant_type) === 'colour')
+                                        <h5>color</h5>
+                                    @endif
                                     <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
+                                        @foreach($r_product->variants as $variant)
+                                            @if(strtolower($variant->product_variant_type) === 'colour')
+                                                <li class="{{$variant->product_variant}}"></li>
+                                            @endif
+                                        @endforeach
                                     </ul>
                                 </div>
                                 <div class="size">
-                                    <h5>size</h5>
+                                    @if(isset($r_product->variants[0]) && strtolower($r_product->variants[0]->product_variant_type) === 'size')
+                                        <h5>size</h5>
+                                    @endif
                                     <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
+                                        @foreach($r_product->variants as $variant)
+                                            @if(strtolower($variant->product_variant_type) === 'size')
+                                                <li class="{{$variant->product_variant}}"></li>
+                                            @endif
+                                        @endforeach
                                     </ul>
                                 </div>
                                 <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
+                                    <a href="{{$r_product->id}}" class="add-to-cart-btn">add to cart</a>
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
                                 </div>
                             </div>
                         </div>
@@ -340,288 +372,289 @@
                     </div>
                 </div>
             </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/2.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/3.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/4.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/5.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/6.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div class="product-box">
-                    <div class="img-block">
-                        <a href="#"><img src="../assets/images/product/6.jpg" class=" img-fluid bg-img" alt=""></a>
-                        <div class="cart-details">
-                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>
-                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>
-                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <a href="#"><h6>richard mcClintock</h6></a>
-                        <h5>$963.00</h5>
-                    </div>
-                    <div class="addtocart_box">
-                        <div class="addtocart_detail">
-                            <div>
-                                <div class="color">
-                                    <h5>color</h5>
-                                    <ul class="color-variant">
-                                        <li class="light-purple active"></li>
-                                        <li class="theme-blue"></li>
-                                        <li class="theme-color"></li>
-                                    </ul>
-                                </div>
-                                <div class="size">
-                                    <h5>size</h5>
-                                    <ul class="size-box">
-                                        <li class="active">xs</li>
-                                        <li>s</li>
-                                        <li>m</li>
-                                        <li>l</li>
-                                        <li>xl</li>
-                                    </ul>
-                                </div>
-                                <div class="addtocart_btn">
-                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="close-cart">
-                            <i class="fa fa-times" aria-hidden="true"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/2.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/3.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/4.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/5.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/6.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--            <div class="">--}}
+{{--                <div class="product-box">--}}
+{{--                    <div class="img-block">--}}
+{{--                        <a href="#"><img src="../assets/images/product/6.jpg" class=" img-fluid bg-img" alt=""></a>--}}
+{{--                        <div class="cart-details">--}}
+{{--                            <button tabindex="0"  class="addcart-box" title="Quick shop"><i class="ti-shopping-cart" ></i></button>--}}
+{{--                            <a href="javascript:void(0)" title="Add to Wishlist"><i class="ti-heart" aria-hidden="true"></i></a>--}}
+{{--                            <a href="#" data-bs-toggle="modal" data-bs-target="#quick-view"  title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
+{{--                            <a href="compare.html"  title="Compare"><i class="ti-reload" aria-hidden="true"></i></a>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                    <div class="product-info">--}}
+{{--                        <a href="#"><h6>richard mcClintock</h6></a>--}}
+{{--                        <h5>$963.00</h5>--}}
+{{--                    </div>--}}
+{{--                    <div class="addtocart_box">--}}
+{{--                        <div class="addtocart_detail">--}}
+{{--                            <div>--}}
+{{--                                <div class="color">--}}
+{{--                                    <h5>color</h5>--}}
+{{--                                    <ul class="color-variant">--}}
+{{--                                        <li class="light-purple active"></li>--}}
+{{--                                        <li class="theme-blue"></li>--}}
+{{--                                        <li class="theme-color"></li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="size">--}}
+{{--                                    <h5>size</h5>--}}
+{{--                                    <ul class="size-box">--}}
+{{--                                        <li class="active">xs</li>--}}
+{{--                                        <li>s</li>--}}
+{{--                                        <li>m</li>--}}
+{{--                                        <li>l</li>--}}
+{{--                                        <li>xl</li>--}}
+{{--                                    </ul>--}}
+{{--                                </div>--}}
+{{--                                <div class="addtocart_btn">--}}
+{{--                                    <a href="javascript:void(0)"  data-bs-toggle="modal" class="closeCartbox" data-bs-target="#addtocart" tabindex="0">add to cart</a>--}}
+{{--                                </div>--}}
+{{--                            </div>--}}
+{{--                        </div>--}}
+{{--                        <div class="close-cart">--}}
+{{--                            <i class="fa fa-times" aria-hidden="true"></i>--}}
+{{--                        </div>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
         </div>
     </div>
 </section>
