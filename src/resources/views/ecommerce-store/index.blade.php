@@ -120,8 +120,8 @@
                                         <div class="cart-info">
                                             <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                         class="ti-shopping-cart"></i></button>
-                                            <a href="{{$product->id}}" title="Add to Wishlist" class="add-to-wishlist"><i class="ti-heart"
-                                                                                                    aria-hidden="true"></i></a>
+{{--                                            <a href="{{$product->id}}" title="Add to Wishlist" class="add-to-wishlist"><i class="ti-heart"--}}
+{{--                                                                                                    aria-hidden="true"></i></a>--}}
 {{--                                            <a href="javascript:void(0)" data-bs-toggle="modal"--}}
 {{--                                               data-bs-target="#quick-view" title="Quick View"><i class="ti-search"--}}
 {{--                                                                                                  aria-hidden="true"></i></a>--}}
@@ -347,10 +347,11 @@
                                     </a>
                                     <div class="cart-info">
                                      <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                        class="ti-shopping-cart"></i></button>
-                                            <a href="{{$product->id}}" title="Add to Wishlist"
-                                               class="add-to-wishlist"><i class="ti-heart" aria-hidden="true"></i>
-                                            </a>
+                                                        class="ti-shopping-cart"></i>
+                                     </button>
+{{--                                            <a href="{{$product->id}}" title="Add to Wishlist"--}}
+{{--                                               class="add-to-wishlist"><i class="ti-heart" aria-hidden="true"></i>--}}
+{{--                                            </a>--}}
 {{--                                        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#quick-view"--}}
 {{--                                           title="Quick View"><i class="ti-search" aria-hidden="true"></i></a>--}}
                                         <a href="{{url('/product/'.$product->id.'?promotions='.$midSidePromo)}}"  title="View"><i class="ti-eye"
@@ -448,11 +449,12 @@
                                         <img src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" class=" img-fluid bg-img"
                                                      alt=""></a>
                                     <div class="cart-info">
-                                        <button tabindex="0" class="addcart-box" title="Quick shop"><i
-                                                    class="ti-shopping-cart"></i></button>
-                                        <a href="{{$product->id}}"
-                                           class="add-to-wishlist" title="Add to Wishlist">
-                                            <i class="ti-heart" aria-hidden="true"></i></a>
+                                        <button tabindex="0" class="addcart-box" title="Quick shop">
+                                            <i class="ti-shopping-cart"></i>
+                                        </button>
+{{--                                        <a href="{{$product->id}}"--}}
+{{--                                           class="add-to-wishlist" title="Add to Wishlist">--}}
+{{--                                            <i class="ti-heart" aria-hidden="true"></i></a>--}}
                                         <a href="{{url('/product/'.$product->id.'?promotions='.$leftSidePromo)}}"  title="View"><i class="ti-eye"
                                                                                                      aria-hidden="true"></i>
                                         </a>
@@ -534,9 +536,9 @@
                                     <div class="cart-info">
                                         <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                     class="ti-shopping-cart"></i></button>
-                                        <a href="{{$product->id}}"
-                                           class="add-to-wishlist" title="Add to Wishlist">
-                                            <i class="ti-heart" aria-hidden="true"></i></a>
+{{--                                        <a href="{{$product->id}}"--}}
+{{--                                           class="add-to-wishlist" title="Add to Wishlist">--}}
+{{--                                            <i class="ti-heart" aria-hidden="true"></i></a>--}}
                                         <a href="{{url('/product/'.$product->id.'?promotions='.$leftSidePromo)}}"  title="View"><i class="ti-eye"
                                                                                                      aria-hidden="true"></i>
                                         </a>
@@ -621,7 +623,7 @@
                                          src="{{ isset($product->product_images[0]) ? asset($product->product_images[0]->url) : asset('assets/images/fashion/pro/1.jpg')}}" alt="">
                                 </a>
                                 @if($product->has_discount === '1')
-                                    <span style="position: absolute;top:20%; left: 10%; background : var(--company-primary-color); padding:1%;color:#fff; border-radius: 10%; "> - {{$$product->discount_value}}% </span>
+                                    <span style="position: absolute;top:20%; left: 10%; background : var(--company-primary-color); padding:1%;color:#fff; border-radius: 10%; "> - {{$product->discount_value}}% </span>
                                 @endif
                                 <div class="media-body align-self-center">
                                     <a href="#" tabindex="0">
@@ -649,9 +651,9 @@
                                     <div class="cart-info">
                                         <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                     class="ti-shopping-cart"></i></button>
-                                        <a href="{{$product->id}}"
-                                           class="add-to-wishlist" title="Add to Wishlist">
-                                            <i class="ti-heart" aria-hidden="true"></i></a>
+{{--                                        <a href="{{$product->id}}"--}}
+{{--                                           class="add-to-wishlist" title="Add to Wishlist">--}}
+{{--                                            <i class="ti-heart" aria-hidden="true"></i></a>--}}
                                         <a href="{{url('/product/'.$product->id.'?promotions='.$rightSidePromo)}}"  title="View"><i class="ti-eye"
                                                                                                      aria-hidden="true"></i>
                                         </a>
@@ -716,7 +718,6 @@
 
                                              $discountedAmount =  $product->prices->data[0]->unit_price->raw -  $caclDiscount  ;
 
-
                                             }
                                         @endphp
 
@@ -729,9 +730,9 @@
                                         <div class="cart-info">
                                             <button tabindex="0" class="addcart-box" title="Quick shop"><i
                                                         class="ti-shopping-cart"></i></button>
-                                            <a href="{{$product->id}}"
-                                               class="add-to-wishlist" title="Add to Wishlist">
-                                                <i class="ti-heart" aria-hidden="true"></i></a>
+{{--                                            <a href="{{$product->id}}"--}}
+{{--                                               class="add-to-wishlist" title="Add to Wishlist">--}}
+{{--                                                <i class="ti-heart" aria-hidden="true"></i></a>--}}
                                             <a href="{{url('/product/'.$product->id.'?promotions='.$rightSidePromo)}}"  title="View"><i class="ti-eye"
                                                                                                          aria-hidden="true"></i>
                                             </a>

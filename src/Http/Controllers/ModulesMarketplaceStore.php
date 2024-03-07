@@ -175,47 +175,45 @@ class ModulesMarketplaceStore extends Controller {
             $this->data['rightPromo_hasDiscount']= null;
             $this->data['rightPromo_DiscountValue'] = 0;
 
-            $right_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['position'];
+            $right_side_promotions = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersRight']['position'];
 
             $rightSidePromotionsCheck = \App\Models\Promotion::where('promotions_space',$right_side_promotions)->where('status','active')->first();
 
             $this->data['rightSidePromo'] = $this->data['marketplace_config']['mainContent_HomePageAsExample']['productsSectionSpecial']['parametersLeft']['title'] = !is_null($rightSidePromotionsCheck) ? $rightSidePromotionsCheck->promotions_name : 'Editor\'s Pick';
 
             if($rightSidePromotionsCheck){
-
                 $rightSidePromotions = \App\Models\PromotionProduct::where('promotions_id',$rightSidePromotionsCheck->id)->where('status','active')->pluck('product_id')->toArray();
-
-
             }
 
             if(!empty($rightSidePromotions)){
 
-                $limitByTwoLeft = [];
-                $limitByTwoRight = [];
+                $limitByTwoRightSideLeft = [];
+                $limitByTwoRightSideRight = [];
                 foreach($rightSidePromotions as $index =>  $PromotionsId){
 
                     if($index < 2){
-                        $limitByTwoLeft[] = $PromotionsId;
+                        $limitByTwoRightSideLeft[] = $PromotionsId;
                     }else{
-                        $limitByTwoRight[] = $PromotionsId;
+                        $limitByTwoRightSideRight[] = $PromotionsId;
                     }
 
                 }
-                $product_ids_left =  ['product_ids' => $limitByTwoLeft];
-                $product_ids_right =  ['product_ids' => $limitByTwoRight];
+
+                $product_ids_RightSide_left =  ['product_ids' => $limitByTwoRightSideLeft];
+                $product_ids_RightSide_right =  ['product_ids' => $limitByTwoRightSideRight];
 
                 $url =  $this->data['core_url'].'feature-product?limit=3';
 
                 $this->data['rightSideProductsLeft'] = [];
                 $this->data['rightSideProductsRight'] = [];
 
-                if(!empty($limitByTwoLeft)) {
-                    $this->data['rightSideProductsLeft'] = $this->postData($token, $url, $product_ids_left);
+                if(!empty($limitByTwoRightSideLeft)) {
+                    $this->data['rightSideProductsLeft'] = $this->postData($token, $url, $product_ids_RightSide_left);
                     $this->data['rightSideProductsLeft'] =  $this->data['rightSideProductsLeft']->data;
                 }
 
-                if(!empty($limitByTwoRight)){
-                    $this->data['rightSideProductsRight'] = $this->postData($token, $url, $product_ids_right);
+                if(!empty($limitByTwoRightSideRight)){
+                    $this->data['rightSideProductsRight'] = $this->postData($token, $url, $product_ids_RightSide_right);
                     $this->data['rightSideProductsRight'] =  $this->data['rightSideProductsRight']->data;
                 }
 
@@ -946,8 +944,6 @@ class ModulesMarketplaceStore extends Controller {
         $this->data['related_products'] =  $this->getData($token,$url);
 
         $this->data['related_products'] =  $this->data['related_products']->data ?? [];
-//        dd($this->data['related_products']);
-
 
         $this->data['promo_name'] = request()->promotions;
 
